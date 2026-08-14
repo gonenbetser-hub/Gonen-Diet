@@ -42,7 +42,7 @@ Weight Health PWA v1
 - start_url: ./#today
 - scope: ./
 - שני אייקונים בלבד: icon-192.png, icon-512.png.
-- לחצן התקן מופיע רק כאשר Chrome מפעיל beforeinstallprompt.
+- לחצן התקן/עדכן מוצג תמיד. כאשר Chrome מאפשר התקנה הוא מפעיל את חלון ההתקנה; כאשר האפליקציה כבר מותקנת הוא בודק ומרענן לגרסה העדכנית.
 - service worker נרשם במפורש ב-scope של הפרויקט.
 
 

@@ -20,7 +20,7 @@
       <h1 id="pageTitle">היום</h1>
     </div>
     <div class="topbar-actions">
-      <button class="install-btn" id="installBtn" type="button" hidden aria-label="התקנת האפליקציה">⬇️ <span>התקן</span></button>
+      <button class="install-btn" id="installBtn" type="button" aria-label="התקנת האפליקציה">⬇️ <span>התקן</span></button>
       <button class="icon-btn" id="settingsBtn" aria-label="הגדרות">⚙️</button>
     </div>
   </header>
@@ -111,7 +111,7 @@
           <label>היקף ירכיים (ס״מ)<input id="inHip" type="number" step="0.1"></label>
           <label>אחוז שומן %<input id="inBodyFat" type="number" step="0.1"></label>
         </div>
-        <button class="primary" id="saveMetrics">שמור מדידה להיום</button>
+        <button class="primary" id="saveMetrics">שמור מדידה חדשה</button><p class="note">כל שמירה נשמרת כרשומת היסטוריה נפרדת עם תאריך ושעה. מדידה חדשה אינה מוחקת מדידה קודמת.</p>
       </div>
       <div class="card">
         <h2>יעדים ומצב</h2>
@@ -121,6 +121,7 @@
         <h2>מגמת משקל</h2>
         <canvas id="weightChart" height="180"></canvas>
       </div>
+      <div class="card"><h2>היסטוריית מדדי גוף</h2><div id="metricHistory"></div></div>
     </section>
 
     <section class="screen" data-screen="meals">
@@ -211,7 +212,7 @@
         <div class="sub" id="preventStored">—</div>
         <p class="note">PREVENT מיועד להערכת סיכון קרדיווסקולרי במניעה ראשונית. יעדי טיפול נקבעים לפי מצב רפואי ורמת סיכון כוללת.</p>
       </div>
-      <div class="card"><h2>היסטוריית מדידות</h2><div id="healthHistory"></div></div>
+      <div class="card"><h2>היסטוריית מדידות</h2><p class="note">כל שמירת נתוני בריאות יוצרת רשומה חדשה. הרשומות הקודמות נשמרות לצורך מגמות והשוואה.</p><div id="healthHistory"></div></div>
     </section>
 
     <section class="screen" data-screen="reports">

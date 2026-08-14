@@ -1,6 +1,9 @@
 const LS='dietControlEvidence_v4';
 const OLD_LS='weightHealthPWA_v1';
-const today=()=>new Date().toISOString().slice(0,10);
+const today=()=>{const d=new Date(),z=d.getTimezoneOffset()*60000;return new Date(d-z).toISOString().slice(0,10)};
+const nowTime=()=>new Date().toTimeString().slice(0,5);
+const recKey=r=>r?.ts||`${r?.date||''}T${r?.time||'00:00'}`;
+const numHtml=(n,d=0)=>`<bdi class="num-ltr" dir="ltr">${Number(n).toFixed(d)}</bdi>`;
 const defaultState={profile:{birthDate:'',sex:'male',height:192,targetWeight:92,calorieTarget:1850,proteinTarget:150},metrics:[],meals:[],activities:[],health:[]};
 let state=JSON.parse(localStorage.getItem(LS)||localStorage.getItem(OLD_LS)||'null')||defaultState;
 state.profile={...defaultState.profile,...(state.profile||{})};
@@ -35,8 +38,8 @@ const INFO={
 };
 function save(){localStorage.setItem(LS,JSON.stringify(state));renderAll()}
 function age(){if(!state.profile.birthDate)return null;const b=new Date(state.profile.birthDate),n=new Date();let a=n.getFullYear()-b.getFullYear();if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate()))a--;return a}
-function latestMetric(){return [...state.metrics].sort((a,b)=>a.date.localeCompare(b.date)).at(-1)||{}}
-function latestHealth(){return [...state.health].sort((a,b)=>a.date.localeCompare(b.date)).at(-1)||{}}
+function latestMetric(){return [...state.metrics].sort((a,b)=>recKey(a).localeCompare(recKey(b))).at(-1)||{}}
+function latestHealth(){return [...state.health].sort((a,b)=>recKey(a).localeCompare(recKey(b))).at(-1)||{}}
 function calc(m=latestMetric()){
  const h=+state.profile.height||0,w=+m.weight||0,wa=+m.waist||0,hip=+m.hip||0;
  const bmi=h&&w?w/((h/100)**2):null, whtr=h&&wa?wa/h:null,whr=wa&&hip?wa/hip:null;
@@ -111,21 +114,21 @@ function renderPreventCalculator(){
 }
 function renderAll(){renderToday();renderActions();renderMetrics();renderMeals();renderActivities();renderHealth();renderPreventCalculator();renderReports();renderEvidence();fillSettings();bindInfo()}
 function renderToday(){const m=latestMetric(),c=calc(m),sc=score();q('todayWeight').textContent=m.weight?`${(+m.weight).toFixed(1)} ק״ג`:'—';q('goalWeight').textContent=`${state.profile.targetWeight||'—'} ק״ג`;
- const first=state.metrics[0]?.weight;if(m.weight&&first&&state.profile.targetWeight){const p=Math.max(0,Math.min(100,(first-m.weight)/(first-state.profile.targetWeight)*100));q('goalProgress').style.width=p+'%';q('weightDelta').textContent=`${(first-m.weight).toFixed(1)} ק״ג שינוי מתחילת המעקב`}else q('goalProgress').style.width='0%';
+ const first=state.metrics[0]?.weight;if(m.weight&&first&&state.profile.targetWeight){const p=Math.max(0,Math.min(100,(first-m.weight)/(first-state.profile.targetWeight)*100));q('goalProgress').style.width=p+'%';q('weightDelta').innerHTML=`שינוי מתחילת המעקב: ${numHtml(first-m.weight,1)} ק״ג`}else q('goalProgress').style.width='0%';
  metric('mBMI',c.bmi?.toFixed(1),bmiStatus(c.bmi));metric('mWHtR',c.whtr?.toFixed(2),whtrStatus(c.whtr));metric('mWHR',c.whr?.toFixed(2),whrStatus(c.whr));metric('mWaist',m.waist?`${m.waist} ס״מ`:'—',waistStatus(+m.waist));
  q('healthScore').textContent=sc??'—';const hc=document.querySelector('.health-card');hc.className='card health-card '+(sc==null?'':sc>=85?'good':sc>=60?'warn':'bad');q('overallStatus').textContent=sc==null?'נדרשים נתונים':sc>=85?'מצב טוב':sc>=60?'יש מדדים לשיפור':'נדרש שיפור';q('overallGap').textContent=sc==null?'הזן נתונים כדי לחשב את הפער ליעד.':sc>=85?`היעד הושג — ${sc} מתוך 100.`:`חסרות ${85-sc} נקודות ליעד של 85.`;q('overallText').textContent=sc==null?'הזן גיל, מין, גובה, משקל והיקפים כדי לקבל תמונת מצב.':`הציון מסכם מדדי גוף בלבד ואינו תחליף להערכת סיכון רפואית מלאה. גיל: ${age()??'לא הוגדר'}.`;
  const h=latestHealth(),ch=calcHealth(h);q('homeBP').textContent=h.sbp&&h.dbp?`${h.sbp}/${h.dbp}`:'—';q('homeBPStatus').textContent=bpStatus(h.sbp,h.dbp)[0];q('homeA1c').textContent=h.hba1c?`${h.hba1c}%`:'—';q('homeLDL').textContent=h.ldl?`${h.ldl}`:'—';q('homeNonHDL').textContent=ch.nonHdl!=null?Math.round(ch.nonHdl):'—';
- const td=today(),meals=state.meals.filter(x=>x.date===td),acts=state.activities.filter(x=>x.date===td),eaten=sum(meals,'calories'),prot=sum(meals,'protein'),burn=Math.max(0,sum(acts,'calories')),target=+state.profile.calorieTarget||0,net=eaten-burn,rem=target-net;q('calTarget').textContent=target;q('calEaten').textContent=eaten;q('calBurned').textContent=burn;q('calNet').textContent=net;q('calorieRemaining').textContent=rem;const pct=target?Math.min(100,Math.max(0,net)/target*100):0;q('calorieRing').style.background=`conic-gradient(#111827 ${pct}%,#e8eaee ${pct}%)`;const pt=+state.profile.proteinTarget||0,pp=pt?Math.min(100,prot/pt*100):0;q('proteinProgress').style.width=pp+'%';q('proteinPct').textContent=Math.round(pp)+'%';q('proteinText').textContent=`${prot} / ${pt} גרם`}
+ const td=today(),meals=state.meals.filter(x=>x.date===td),acts=state.activities.filter(x=>x.date===td),eaten=sum(meals,'calories'),prot=sum(meals,'protein'),burn=Math.max(0,sum(acts,'calories')),target=+state.profile.calorieTarget||0,net=eaten-burn,rem=target-net;q('calTarget').textContent=target;q('calEaten').textContent=eaten;q('calBurned').textContent=burn;q('calNet').innerHTML=numHtml(net,0);q('calorieRemaining').innerHTML=numHtml(rem,0);const pct=target?Math.min(100,Math.max(0,net)/target*100):0;q('calorieRing').style.background=`conic-gradient(#111827 ${pct}%,#e8eaee ${pct}%)`;const pt=+state.profile.proteinTarget||0,pp=pt?Math.min(100,prot/pt*100):0;q('proteinProgress').style.width=pp+'%';q('proteinPct').textContent=Math.round(pp)+'%';q('proteinText').textContent=`${prot} / ${pt} גרם`}
 function metric(id,val,st){q(id).textContent=val??'—';q(id+'Status').textContent=st[0]}
-function renderMetrics(){const m=latestMetric();q('inWeight').value=m.weight||'';q('inWaist').value=m.waist||'';q('inHip').value=m.hip||'';q('inBodyFat').value=m.bodyFat||'';const c=calc(m);q('targetsTable').innerHTML=targetRows(c,m);drawChart()}
+function renderMetrics(){const m=latestMetric();q('inWeight').value=m.weight||'';q('inWaist').value=m.waist||'';q('inHip').value=m.hip||'';q('inBodyFat').value=m.bodyFat||'';const c=calc(m);q('targetsTable').innerHTML=targetRows(c,m);const hist=[...state.metrics].sort((a,b)=>recKey(b).localeCompare(recKey(a))).slice(0,20);const mh=q('metricHistory');if(mh)mh.innerHTML=hist.length?hist.map(x=>`<div class="listitem"><div><strong>${x.date} ${x.time||''}</strong><div class="sub">משקל ${x.weight||'—'} ק״ג | מותניים ${x.waist||'—'} ס״מ</div></div><div class="sub">שומן ${x.bodyFat||'—'}%</div></div>`).join(''):'<div class="sub">עדיין אין מדידות גוף שמורות</div>';drawChart()}
 function targetRows(c,m){const rows=[['BMI',c.bmi?.toFixed(1)||'—','18.5–24.9',bmiStatus(c.bmi)[0],'bmi'],['מותניים/גובה',c.whtr?.toFixed(2)||'—','<0.50',whtrStatus(c.whtr)[0],'whtr'],['מותניים/ירכיים',c.whr?.toFixed(2)||'—',state.profile.sex==='male'?'<0.90':'<0.85',whrStatus(c.whr)[0],'whr'],['היקף מותניים',m.waist?m.waist+' ס״מ':'—',state.profile.sex==='male'?'<94 ס״מ':'<80 ס״מ',waistStatus(+m.waist)[0],'waist'],['אחוז שומן',m.bodyFat?m.bodyFat+'%':'—','מגמה אישית','למעקב',null]];return rows.map(r=>`<div class="target"><div><strong>${r[0]}</strong><div class="sub">נוכחי: ${r[1]}</div></div><div class="target-side"><span class="badge">יעד ${r[2]}</span><div class="sub">${r[3]}</div>${r[4]?infoBtn(r[4]):''}</div></div>`).join('')}
-function drawChart(){const c=q('weightChart'),ctx=c.getContext('2d'),d=[...state.metrics].sort((a,b)=>a.date.localeCompare(b.date)).slice(-30);const w=c.width=c.clientWidth*devicePixelRatio,h=c.height=180*devicePixelRatio;ctx.clearRect(0,0,w,h);if(d.length<2){ctx.fillStyle='#6b7280';ctx.font=`${14*devicePixelRatio}px Arial`;ctx.fillText('נדרשות לפחות שתי שקילות',20*devicePixelRatio,90*devicePixelRatio);return}const vals=d.map(x=>+x.weight).filter(Boolean),min=Math.min(...vals)-1,max=Math.max(...vals)+1;ctx.strokeStyle='#111827';ctx.lineWidth=2*devicePixelRatio;ctx.beginPath();d.forEach((x,i)=>{const xx=(i/(d.length-1))*w,yy=h-((x.weight-min)/(max-min))*h;(i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy))});ctx.stroke()}
-function renderMeals(){const arr=state.meals.filter(x=>x.date===today()).sort((a,b)=>b.time.localeCompare(a.time));q('mealList').innerHTML=arr.length?arr.map(x=>`<div class="listitem"><div><strong>${x.desc||'ארוחה'}</strong><div class="sub">${x.time}</div></div><div>${x.calories} קק״ל<br><span class="sub">${x.protein||0} ג׳ חלבון</span></div></div>`).join(''):'<div class="sub">אין ארוחות להיום</div>'}
-function renderActivities(){const arr=state.activities.filter(x=>x.date===today()).sort((a,b)=>b.time.localeCompare(a.time));q('activityList').innerHTML=arr.length?arr.map(x=>`<div class="listitem"><div><strong>${x.type}</strong><div class="sub">${x.minutes||0} דקות</div></div><div>${x.calories||0} קק״ל</div></div>`).join(''):'<div class="sub">אין פעילות להיום</div>'}
+function drawChart(){const c=q('weightChart'),ctx=c.getContext('2d'),d=[...state.metrics].sort((a,b)=>recKey(a).localeCompare(recKey(b))).slice(-30);const w=c.width=c.clientWidth*devicePixelRatio,h=c.height=180*devicePixelRatio;ctx.clearRect(0,0,w,h);if(d.length<2){ctx.fillStyle='#6b7280';ctx.font=`${14*devicePixelRatio}px Arial`;ctx.fillText('נדרשות לפחות שתי שקילות',20*devicePixelRatio,90*devicePixelRatio);return}const vals=d.map(x=>+x.weight).filter(Boolean),min=Math.min(...vals)-1,max=Math.max(...vals)+1;ctx.strokeStyle='#111827';ctx.lineWidth=2*devicePixelRatio;ctx.beginPath();d.forEach((x,i)=>{const xx=(i/(d.length-1))*w,yy=h-((x.weight-min)/(max-min))*h;(i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy))});ctx.stroke()}
+function renderMeals(){const arr=state.meals.filter(x=>x.date===today()).sort((a,b)=>(b.time||'').localeCompare(a.time||''));q('mealList').innerHTML=arr.length?arr.map(x=>`<div class="listitem"><div><strong>${x.desc||'ארוחה'}</strong><div class="sub">${x.time||''}</div></div><div class="list-actions"><div>${x.calories} קק״ל<br><span class="sub">${x.protein||0} ג׳ חלבון</span></div><button class="delete-btn" data-delete-meal="${x.id}" aria-label="מחיקת ארוחה">מחק</button></div></div>`).join(''):'<div class="sub">אין ארוחות להיום</div>'}
+function renderActivities(){const arr=state.activities.filter(x=>x.date===today()).sort((a,b)=>(b.time||'').localeCompare(a.time||''));q('activityList').innerHTML=arr.length?arr.map(x=>`<div class="listitem"><div><strong>${x.type}</strong><div class="sub">${x.minutes||0} דקות</div></div><div class="list-actions"><div>${x.calories||0} קק״ל</div><button class="delete-btn" data-delete-activity="${x.id}" aria-label="מחיקת אימון">מחק</button></div></div>`).join(''):'<div class="sub">אין פעילות להיום</div>'}
 function renderHealth(){const h=latestHealth(),c=calcHealth(h);['sbp','dbp','restingHr','totalChol','ldl','hdl','triglycerides','fastingGlucose','hba1c','egfr','creatinine','uacr','apoB','lpa'].forEach(k=>{const el=q('h_'+k);if(el)el.value=h[k]??''});q('h_smoking').checked=!!h.smoking;q('h_diabetes').checked=!!h.diabetes;q('h_bpMeds').checked=!!h.bpMeds;q('h_statinMeds').checked=!!h.statinMeds;q('h_knownCvd').checked=!!h.knownCvd;
  q('healthDerived').innerHTML=[['לחץ דם',h.sbp&&h.dbp?`${h.sbp}/${h.dbp} mmHg`:'—','<120/80',bpStatus(h.sbp,h.dbp)[0],'bp'],['דופק מנוחה',h.restingHr?`${h.restingHr} פעימות/דק׳`:'—','מגמה אישית','למעקב'],['HbA1c',h.hba1c?`${h.hba1c}%`:'—','<5.7% ללא סוכרת',a1cStatus(h.hba1c)[0],'a1c'],['גלוקוז בצום',h.fastingGlucose?`${h.fastingGlucose} mg/dL`:'—','<100',glucoseStatus(h.fastingGlucose)[0],'glucose'],['LDL-C',h.ldl?`${h.ldl} mg/dL`:'—','תלוי רמת סיכון',ldlStatus(h.ldl)[0],'ldl'],['Non-HDL-C',c.nonHdl!=null?`${Math.round(c.nonHdl)} mg/dL`:'—','תלוי רמת סיכון','מחושב אוטומטית','nonhdl'],['טריגליצרידים',h.triglycerides?`${h.triglycerides} mg/dL`:'—','<150',tgStatus(h.triglycerides)[0],'tg'],['TG/HDL',c.tgHdl!=null?c.tgHdl.toFixed(2):'—','מדד משלים','ללא סף אבחנתי יחיד','tghdl'],['Pulse Pressure',c.pulsePressure!=null?`${Math.round(c.pulsePressure)} mmHg`:'—','מגמה','מחושב'],['MAP',c.map!=null?`${Math.round(c.map)} mmHg`:'—','מגמה','מחושב'],['eGFR',h.egfr?`${h.egfr} mL/min/1.73m²`:'—','פענוח רפואי','כליה','egfr'],['UACR',h.uacr?`${h.uacr} mg/g`:'—','פענוח רפואי','כליה','uacr'],['ApoB',h.apoB?`${h.apoB} mg/dL`:'—','תלוי סיכון','מתקדם'],['Lp(a)',h.lpa?`${h.lpa} mg/dL`:'—','לפי מעבדה/הנחיה','מתקדם']].map(r=>`<div class="target"><div><strong>${r[0]}</strong><div class="sub">נוכחי: ${r[1]}</div></div><div class="target-side"><span class="badge">יעד ${r[2]}</span><div class="sub">${r[3]}</div>${r[4]?infoBtn(r[4]):''}</div></div>`).join('');
  const a=age();let eligibility='נדרשים גיל ונתוני בריאות';if(a!=null){if(a>=30&&a<=79)eligibility='מתאים עקרונית לחישוב PREVENT ל־10 שנים, בכפוף לקריטריונים הקליניים';else eligibility='מחוץ לטווח הגיל המקובל של PREVENT ל־10 שנים';if(a>=30&&a<=59)eligibility+='; ניתן גם לחשב סיכון ל־30 שנה'}q('preventEligibility').textContent=eligibility;const pr=renderPreventCalculator();q('preventStored').textContent=pr&&pr.r10.risk!=null?`מחושב אוטומטית: 10 שנים ${pr.r10.risk.toFixed(1)}%${pr.r30.risk!=null?` | 30 שנים ${pr.r30.risk.toFixed(1)}%`:''}`:'נדרשים נתונים מלאים לחישוב';
- const hist=[...state.health].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);q('healthHistory').innerHTML=hist.length?hist.map(x=>`<div class="listitem"><div><strong>${x.date}</strong><div class="sub">לחץ דם ${x.sbp&&x.dbp?`${x.sbp}/${x.dbp}`:'—'} | HbA1c ${x.hba1c||'—'}%</div></div><div>${x.ldl?`LDL ${x.ldl}`:''}</div></div>`).join(''):'<div class="sub">עדיין אין מדידות בריאות שמורות</div>'}
+ const hist=[...state.health].sort((a,b)=>recKey(b).localeCompare(recKey(a))).slice(0,20);q('healthHistory').innerHTML=hist.length?hist.map(x=>`<div class="listitem"><div><strong>${x.date} ${x.time||''}</strong><div class="sub">לחץ דם ${x.sbp&&x.dbp?`${x.sbp}/${x.dbp}`:'—'} | HbA1c ${x.hba1c||'—'}%</div></div><div>${x.ldl?`LDL ${x.ldl}`:''}</div></div>`).join(''):'<div class="sub">עדיין אין מדידות בריאות שמורות</div>'}
 function renderReports(){const cut=new Date();cut.setDate(cut.getDate()-6);const ds=[...Array(7)].map((_,i)=>{const d=new Date(cut);d.setDate(cut.getDate()+i);return d.toISOString().slice(0,10)});const ms=state.metrics.filter(x=>ds.includes(x.date));const meals=state.meals.filter(x=>ds.includes(x.date));const acts=state.activities.filter(x=>ds.includes(x.date));const avg=ms.length?(sum(ms,'weight')/ms.length).toFixed(1):'—';const h=latestHealth(),ch=calcHealth(h);q('weeklySummary').innerHTML=`<div class="targets"><div class="target"><strong>משקל ממוצע</strong><span>${avg} ק״ג</span></div><div class="target"><strong>קלוריות ממוצעות</strong><span>${Math.round(sum(meals,'calories')/7)}</span></div><div class="target"><strong>חלבון ממוצע</strong><span>${Math.round(sum(meals,'protein')/7)} ג׳</span></div><div class="target"><strong>פעילות</strong><span>${acts.length} אימונים</span></div><div class="target"><strong>לחץ דם אחרון</strong><span>${h.sbp&&h.dbp?`${h.sbp}/${h.dbp}`:'—'}</span></div><div class="target"><strong>Non-HDL אחרון</strong><span>${ch.nonHdl!=null?Math.round(ch.nonHdl):'—'}</span></div></div>`;q('reportTargets').innerHTML=targetRows(calc(),latestMetric())}
 function fillSettings(){const p=state.profile;q('birthDate').value=p.birthDate||'';q('sex').value=p.sex||'male';q('height').value=p.height||'';q('targetWeight').value=p.targetWeight||'';q('calorieTarget').value=p.calorieTarget||'';q('proteinTarget').value=p.proteinTarget||''}
 function q(id){return document.getElementById(id)}function sum(a,k){return a.reduce((s,x)=>s+(+x[k]||0),0)}
@@ -133,38 +136,72 @@ function validScreen(name){return ['today','meals','metrics','activity','health'
 function go(name,updateHash=true){if(!validScreen(name))name='today';document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.dataset.screen===name));document.querySelectorAll('[data-screen-btn]').forEach(x=>x.classList.toggle('active',x.dataset.screenBtn===name));q('pageTitle').textContent={today:'היום',meals:'ארוחות',metrics:'מדדי גוף',activity:'פעילות',health:'בריאות',reports:'דוחות',evidence:'ידע ומקורות',settings:'הגדרות'}[name]||'';if(updateHash&&location.hash!==`#${name}`){history.replaceState(null,'',`#${name}`)}scrollTo(0,0)}
 document.querySelectorAll('[data-screen-btn]').forEach(b=>b.onclick=()=>go(b.dataset.screenBtn));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));q('settingsBtn').onclick=()=>go('settings');
 q('saveSettings').onclick=()=>{state.profile={birthDate:q('birthDate').value,sex:q('sex').value,height:+q('height').value,targetWeight:+q('targetWeight').value,calorieTarget:+q('calorieTarget').value,proteinTarget:+q('proteinTarget').value};save();go('today')};
-q('saveMetrics').onclick=()=>{const rec={date:today(),weight:+q('inWeight').value,waist:+q('inWaist').value,hip:+q('inHip').value,bodyFat:+q('inBodyFat').value};state.metrics=state.metrics.filter(x=>x.date!==rec.date);state.metrics.push(rec);save();go('today')};
-q('saveMeal').onclick=()=>{state.meals.push({id:Date.now(),date:today(),time:new Date().toTimeString().slice(0,5),desc:q('mealDesc').value,calories:+q('mealCalories').value||0,protein:+q('mealProtein').value||0});q('mealDesc').value='';q('mealCalories').value='';q('mealProtein').value='';save()};
-q('saveActivity').onclick=()=>{state.activities.push({id:Date.now(),date:today(),time:new Date().toTimeString().slice(0,5),type:q('actType').value,minutes:+q('actMinutes').value||0,calories:Math.max(0,+q('actCalories').value||0)});q('actMinutes').value='';q('actCalories').value='';save()};
-q('saveHealth').onclick=()=>{const keys=['sbp','dbp','restingHr','totalChol','ldl','hdl','triglycerides','fastingGlucose','hba1c','egfr','creatinine','uacr','apoB','lpa'];const rec={date:q('healthDate').value||today()};keys.forEach(k=>rec[k]=+q('h_'+k).value||'');rec.smoking=q('h_smoking').checked;rec.diabetes=q('h_diabetes').checked;rec.bpMeds=q('h_bpMeds').checked;rec.statinMeds=q('h_statinMeds').checked;rec.knownCvd=q('h_knownCvd').checked;state.health=state.health.filter(x=>x.date!==rec.date);state.health.push(rec);save()};
+q('saveMetrics').onclick=()=>{const rec={id:Date.now(),date:today(),time:nowTime(),ts:new Date().toISOString(),weight:+q('inWeight').value,waist:+q('inWaist').value,hip:+q('inHip').value,bodyFat:+q('inBodyFat').value};state.metrics.push(rec);save();go('today')};
+q('saveMeal').onclick=()=>{state.meals.push({id:Date.now(),date:today(),time:nowTime(),desc:q('mealDesc').value,calories:+q('mealCalories').value||0,protein:+q('mealProtein').value||0});q('mealDesc').value='';q('mealCalories').value='';q('mealProtein').value='';save()};
+q('saveActivity').onclick=()=>{state.activities.push({id:Date.now(),date:today(),time:nowTime(),type:q('actType').value,minutes:+q('actMinutes').value||0,calories:Math.max(0,+q('actCalories').value||0)});q('actMinutes').value='';q('actCalories').value='';save()};
+q('saveHealth').onclick=()=>{const keys=['sbp','dbp','restingHr','totalChol','ldl','hdl','triglycerides','fastingGlucose','hba1c','egfr','creatinine','uacr','apoB','lpa'];const rec={id:Date.now(),date:q('healthDate').value||today(),time:nowTime(),ts:new Date().toISOString()};keys.forEach(k=>rec[k]=+q('h_'+k).value||'');rec.smoking=q('h_smoking').checked;rec.diabetes=q('h_diabetes').checked;rec.bpMeds=q('h_bpMeds').checked;rec.statinMeds=q('h_statinMeds').checked;rec.knownCvd=q('h_knownCvd').checked;state.health.push(rec);save()};
 q('calcPrevent').onclick=()=>{renderPreventCalculator();};
 q('healthDate').value=today();
 
-// PWA installation: show an explicit install button only when Chrome confirms
-// that the app currently satisfies its installability criteria.
+document.addEventListener('click',e=>{
+ const mb=e.target.closest('[data-delete-meal]');
+ if(mb&&confirm('למחוק את הארוחה?')){const id=+mb.dataset.deleteMeal;state.meals=state.meals.filter(x=>+x.id!==id);save();return}
+ const ab=e.target.closest('[data-delete-activity]');
+ if(ab&&confirm('למחוק את האימון?')){const id=+ab.dataset.deleteActivity;state.activities=state.activities.filter(x=>+x.id!==id);save()}
+});
+
+// PWA installation / update UX.
+// The button stays visible in every version. Chrome controls whether a native
+// install prompt is actually available; when already installed, the same
+// button checks for and applies the newest service-worker version.
+const APP_VERSION='4.6';
 let deferredInstallPrompt=null;
 const installBtn=q('installBtn');
 function runningStandalone(){
   return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
 }
 function refreshInstallUI(){
-  if(installBtn) installBtn.hidden=runningStandalone() || !deferredInstallPrompt;
+  if(!installBtn)return;
+  installBtn.hidden=false;
+  const label=installBtn.querySelector('span');
+  if(label) label.textContent=runningStandalone()?'עדכן':'התקן';
+  installBtn.setAttribute('aria-label',runningStandalone()?'בדיקת עדכון לאפליקציה':'התקנת האפליקציה');
 }
 window.addEventListener('beforeinstallprompt',e=>{
   e.preventDefault();
   deferredInstallPrompt=e;
   refreshInstallUI();
 });
-if(installBtn) installBtn.addEventListener('click',async()=>{
-  if(!deferredInstallPrompt)return;
-  const promptEvent=deferredInstallPrompt;
-  deferredInstallPrompt=null;
-  refreshInstallUI();
+async function updateInstalledApp(){
+  if(!('serviceWorker' in navigator)){
+    alert('לא נמצא Service Worker פעיל. פתח את האתר ב-Chrome ונסה שוב.');
+    return;
+  }
   try{
-    await promptEvent.prompt();
-    await promptEvent.userChoice;
-  }catch(_){/* browser owns the install UI */}
-  refreshInstallUI();
+    const reg=await navigator.serviceWorker.getRegistration('./') || await navigator.serviceWorker.getRegistration();
+    if(reg) await reg.update();
+    alert(`Diet Control v${APP_VERSION}: נבדקה הגרסה העדכנית. אם הועלתה גרסה חדשה ל-GitHub Pages, רענן/פתח מחדש את האפליקציה כדי לטעון אותה.`);
+    location.reload();
+  }catch(_){
+    location.reload();
+  }
+}
+if(installBtn) installBtn.addEventListener('click',async()=>{
+  if(deferredInstallPrompt){
+    const promptEvent=deferredInstallPrompt;
+    deferredInstallPrompt=null;
+    try{
+      await promptEvent.prompt();
+      await promptEvent.userChoice;
+    }catch(_){/* Chrome owns the native install UI */}
+    refreshInstallUI();
+    return;
+  }
+  if(runningStandalone()){
+    await updateInstalledApp();
+    return;
+  }
+  alert('Chrome עדיין לא מציע התקנת PWA עבור הדף הזה. אפשר לנסות שוב לאחר רענון, או לבחור בתפריט Chrome: התקנת האפליקציה. הכפתור יישאר זמין גם בגרסאות הבאות.');
 });
 window.addEventListener('appinstalled',()=>{
   deferredInstallPrompt=null;
@@ -173,7 +210,12 @@ window.addEventListener('appinstalled',()=>{
 window.matchMedia('(display-mode: standalone)').addEventListener?.('change',refreshInstallUI);
 
 if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
+  window.addEventListener('load',async()=>{
+    try{
+      const reg=await navigator.serviceWorker.register('./sw.js',{scope:'./'});
+      await reg.update();
+    }catch(_){ }
+  });
 }
 renderAll();
 const initialScreen=(location.hash||'#today').replace('#','');
