@@ -85,12 +85,12 @@
       <div class="card">
         <div class="row between"><h2>קלוריות היום</h2><button class="text-btn" data-go="meals">הוסף ארוחה</button></div>
         <div class="calorie-ring-wrap">
-          <div class="ring" id="calorieRing"><span id="calorieRemaining">—</span><small>נותרו</small></div>
+          <div class="ring" id="calorieRing"><span id="calorieRemaining">—</span><small>נותרו לאחר פעילות</small></div>
           <div class="calstats">
             <div><span>יעד אכילה</span><strong id="calTarget">—</strong></div>
             <div><span>נאכל</span><strong id="calEaten">—</strong></div>
-            <div><span>פעילות</span><strong id="calBurned">—</strong></div>
-            <div><span>מאזן נטו</span><strong id="calNet">—</strong></div>
+            <div><span>פעילות שנשרפה</span><strong id="calBurned">—</strong></div>
+            <div><span>מאזן נטו (נאכל − פעילות)</span><strong id="calNet">—</strong></div>
           </div>
         </div>
       </div>
@@ -142,7 +142,7 @@
         <div class="form-grid">
           <label>סוג<select id="actType"><option>הליכה</option><option>ריצה</option><option>כוח</option><option>כדורסל</option><option>אופניים</option><option>אחר</option></select></label>
           <label>משך (דקות)<input id="actMinutes" type="number"></label>
-          <label>קלוריות שנשרפו<input id="actCalories" type="number"></label>
+          <label>קלוריות שנשרפו <small>(יש להזין מספר חיובי)</small><input id="actCalories" type="number" min="0" inputmode="numeric" placeholder="לדוגמה 450"></label>
         </div>
         <button class="primary" id="saveActivity">שמור פעילות</button>
       </div>
@@ -186,12 +186,18 @@
           <label class="check"><input id="h_diabetes" type="checkbox"> סוכרת ידועה</label>
           <label class="check"><input id="h_bpMeds" type="checkbox"> טיפול תרופתי בלחץ דם</label>
         </div>
-        <h3>PREVENT</h3>
-        <p class="note">הזן כאן תוצאה שחושבה במחשבון PREVENT הרשמי. האפליקציה אינה מייצרת הערכת PREVENT משוערת.</p>
-        <div class="form-grid">
-          <label>סיכון 10 שנים (%)<input id="h_prevent10" type="number" step="0.1"></label>
-          <label>סיכון 30 שנים (%)<input id="h_prevent30" type="number" step="0.1"></label>
+        <h3>PREVENT™ — מחשבון מובנה</h3>
+        <p class="note">החישוב מבוסס על משוואות PREVENT של AHA למניעה ראשונית. נדרשים גיל 30–79, כולסטרול כללי, HDL, לחץ דם סיסטולי, BMI ו-eGFR. סיכון ל-30 שנה מחושב בגיל 30–59.</p>
+        <div class="checks">
+          <label class="check"><input id="h_statinMeds" type="checkbox"> טיפול בסטטין</label>
+          <label class="check"><input id="h_knownCvd" type="checkbox"> מחלת לב/שבץ/מחלת כלי דם ידועה</label>
         </div>
+        <button class="secondary" id="calcPrevent" type="button">חשב PREVENT עכשיו</button>
+        <div class="prevent-results">
+          <div class="metric mini"><span>סיכון CVD ל-10 שנים</span><strong id="preventCalc10">—</strong><small id="preventCalc10Text">—</small></div>
+          <div class="metric mini"><span>סיכון CVD ל-30 שנים</span><strong id="preventCalc30">—</strong><small id="preventCalc30Text">—</small></div>
+        </div>
+        <p class="note" id="preventCalcNote">התוצאה היא הערכת סיכון סטטיסטית ואינה אבחנה רפואית.</p>
         <button class="primary" id="saveHealth">שמור נתוני בריאות</button>
       </div>
       <div class="card">

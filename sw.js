@@ -1,4 +1,4 @@
-const C='diet-control-v4.2-installable-pwa';
+const C='diet-control-v4.4-installable-pwa';
 const CORE=['./','./index.html','./styles.css','./app.js','./manifest.json','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{
   self.skipWaiting();
