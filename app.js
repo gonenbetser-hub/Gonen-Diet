@@ -90,4 +90,44 @@ q('saveMeal').onclick=()=>{state.meals.push({id:Date.now(),date:today(),time:new
 q('saveActivity').onclick=()=>{state.activities.push({id:Date.now(),date:today(),time:new Date().toTimeString().slice(0,5),type:q('actType').value,minutes:+q('actMinutes').value||0,calories:+q('actCalories').value||0});q('actMinutes').value='';q('actCalories').value='';save()};
 q('saveHealth').onclick=()=>{const keys=['sbp','dbp','restingHr','totalChol','ldl','hdl','triglycerides','fastingGlucose','hba1c','egfr','creatinine','uacr','apoB','lpa','prevent10','prevent30'];const rec={date:q('healthDate').value||today()};keys.forEach(k=>rec[k]=+q('h_'+k).value||'');rec.smoking=q('h_smoking').checked;rec.diabetes=q('h_diabetes').checked;rec.bpMeds=q('h_bpMeds').checked;state.health=state.health.filter(x=>x.date!==rec.date);state.health.push(rec);save()};
 q('healthDate').value=today();
-if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});renderAll();const initialScreen=(location.hash||'#today').replace('#','');go(validScreen(initialScreen)?initialScreen:'today',false);window.addEventListener('hashchange',()=>{const s=(location.hash||'#today').replace('#','');if(validScreen(s))go(s,false)});
+
+// PWA installation: show an explicit install button only when Chrome confirms
+// that the app currently satisfies its installability criteria.
+let deferredInstallPrompt=null;
+const installBtn=q('installBtn');
+function runningStandalone(){
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone===true;
+}
+function refreshInstallUI(){
+  if(installBtn) installBtn.hidden=runningStandalone() || !deferredInstallPrompt;
+}
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();
+  deferredInstallPrompt=e;
+  refreshInstallUI();
+});
+if(installBtn) installBtn.addEventListener('click',async()=>{
+  if(!deferredInstallPrompt)return;
+  const promptEvent=deferredInstallPrompt;
+  deferredInstallPrompt=null;
+  refreshInstallUI();
+  try{
+    await promptEvent.prompt();
+    await promptEvent.userChoice;
+  }catch(_){/* browser owns the install UI */}
+  refreshInstallUI();
+});
+window.addEventListener('appinstalled',()=>{
+  deferredInstallPrompt=null;
+  refreshInstallUI();
+});
+window.matchMedia('(display-mode: standalone)').addEventListener?.('change',refreshInstallUI);
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(()=>{}));
+}
+renderAll();
+const initialScreen=(location.hash||'#today').replace('#','');
+go(validScreen(initialScreen)?initialScreen:'today',false);
+window.addEventListener('hashchange',()=>{const s=(location.hash||'#today').replace('#','');if(validScreen(s))go(s,false)});
+refreshInstallUI();

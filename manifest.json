@@ -1,15 +1,16 @@
 {
-  "id": "./diet-control-v4-evidence",
+  "id": "./",
   "name": "Diet Control — בריאות ומשקל",
   "short_name": "Diet Control",
   "description": "ניהול ירידה במשקל ובריאות קרדיו-מטבולית מבוסס מקורות מקצועיים",
-  "start_url": "./index.html#today",
+  "start_url": "./#today",
   "scope": "./",
   "display": "standalone",
   "background_color": "#f5f6f8",
   "theme_color": "#111827",
   "lang": "he",
   "dir": "rtl",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "./icon-192.png",

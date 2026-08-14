@@ -34,3 +34,13 @@ Weight Health PWA v1
 - מקורות: NICE, WHO, AHA/ACC, ADA 2026, KDIGO 2024, ACSM, CDC.
 - מדדים משלימים מסומנים ואינם מוצגים כאבחנה.
 - manifest חדש וזהות PWA חדשה כדי לצמצם cache של התקנות קודמות.
+
+
+גרסה 4.2 – תיקון התקנת PWA באנדרואיד
+- manifest יחיד בשורש.
+- id קבוע: ./
+- start_url: ./#today
+- scope: ./
+- שני אייקונים בלבד: icon-192.png, icon-512.png.
+- לחצן התקן מופיע רק כאשר Chrome מפעיל beforeinstallprompt.
+- service worker נרשם במפורש ב-scope של הפרויקט.
