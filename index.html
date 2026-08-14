@@ -48,8 +48,22 @@
       </div>
 
       <div class="card health-card">
-        <div class="row between"><div><span class="label">מצב כללי</span><h2 id="overallStatus">נדרשים נתונים</h2></div><div class="score" id="healthScore">—</div></div>
+        <div class="row between">
+          <div>
+            <span class="label">מצב כללי</span>
+            <h2 id="overallStatus">נדרשים נתונים</h2>
+            <div class="overall-goal">יעד: <strong>85+</strong> מתוך 100</div>
+          </div>
+          <div class="score-wrap">
+            <div class="score" id="healthScore">—</div>
+            <div class="score-denom">מתוך 100</div>
+          </div>
+        </div>
+        <p id="overallGap" class="overall-gap">הזן נתונים כדי לחשב את הפער ליעד.</p>
         <p id="overallText">הזן גיל, מין, גובה, משקל והיקפים כדי לקבל תמונת מצב.</p>
+        <div class="score-scale" aria-label="סולם מצב כללי">
+          <span>0–59 נדרש שיפור</span><span>60–84 בינוני</span><span>85–100 טוב</span>
+        </div>
       </div>
 
       <div class="card action-card">
