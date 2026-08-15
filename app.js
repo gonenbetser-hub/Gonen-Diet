@@ -14,6 +14,10 @@ function loadState(){
 let state=loadState();
 state.profile={...defaultState.profile,...(state.profile||{})};
 state.metrics=state.metrics||[];state.meals=state.meals||[];state.activities=state.activities||[];state.health=state.health||[];
+// v3.9 migration: ensure every legacy meal/activity has a stable id so delete works on old data too.
+state.meals=state.meals.map((x,i)=>({...x,id:x.id??`meal-legacy-${x.date||'na'}-${x.time||'na'}-${i}`}));
+state.activities=state.activities.map((x,i)=>({...x,id:x.id??`activity-legacy-${x.date||'na'}-${x.time||'na'}-${i}`}));
+localStorage.setItem(LS,JSON.stringify(state));
 state.meals=state.meals.map((x,i)=>({...x,id:x.id??`meal-${x.date||'x'}-${x.time||'x'}-${i}`}));
 state.activities=state.activities.map((x,i)=>({...x,id:x.id??`activity-${x.date||'x'}-${x.time||'x'}-${i}`}));
 function save(){const previous=localStorage.getItem(LS);if(previous)localStorage.setItem(LS_PREVIOUS,previous);const raw=JSON.stringify(state);localStorage.setItem(LS,raw);localStorage.setItem(LS_BACKUP,raw);renderAll()}
@@ -52,25 +56,24 @@ function targetRows(c,m){const rows=[['BMI',c.bmi?.toFixed(1)||'—','18.5–24.
 function drawChart(){const c=q('weightChart'),ctx=c.getContext('2d'),d=[...state.metrics].sort((a,b)=>a.date.localeCompare(b.date)).slice(-30);const w=c.width=c.clientWidth*devicePixelRatio,h=c.height=180*devicePixelRatio;ctx.clearRect(0,0,w,h);if(d.length<2){ctx.fillStyle='#6b7280';ctx.font=`${14*devicePixelRatio}px Arial`;ctx.fillText('נדרשות לפחות שתי שקילות',20*devicePixelRatio,90*devicePixelRatio);return}const vals=d.map(x=>+x.weight).filter(Boolean),min=Math.min(...vals)-1,max=Math.max(...vals)+1;ctx.strokeStyle='#111827';ctx.lineWidth=2*devicePixelRatio;ctx.beginPath();d.forEach((x,i)=>{const xx=(i/(d.length-1))*w,yy=h-((x.weight-min)/(max-min))*h;(i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy))});ctx.stroke()}
 function renderMeals(){
  const arr=state.meals.filter(x=>x.date===today()).sort((a,b)=>(b.time||'').localeCompare(a.time||''));
- q('mealList').innerHTML=arr.length?arr.map(x=>`<div class="listitem editable-listitem"><div class="list-main"><strong>${escapeHtml(x.desc||'ארוחה')}</strong><div class="sub">${escapeHtml(x.time||'')}</div></div><div class="list-actions"><div class="list-values">${+x.calories||0} קק״ל<br><span class="sub">${+x.protein||0} ג׳ חלבון</span></div><button type="button" class="delete-entry" data-delete-meal="${escapeAttr(String(x.id))}" aria-label="מחק ארוחה" title="מחק ארוחה">🗑️</button></div></div>`).join(''):'<div class="sub">אין ארוחות להיום</div>';
+ q('mealList').innerHTML=arr.length?arr.map(x=>`<div class="listitem editable-listitem"><div class="list-main"><strong>${escapeHtml(x.desc||'ארוחה')}</strong><div class="sub">${escapeHtml(x.time||'')}</div></div><div class="list-actions"><div class="list-values">${+x.calories||0} קק״ל<br><span class="sub">${+x.protein||0} ג׳ חלבון</span></div><button type="button" class="delete-entry delete-entry-labeled" data-delete-meal="${escapeAttr(String(x.id))}" aria-label="מחק ארוחה" title="מחק ארוחה"><span aria-hidden="true">🗑️</span><span>מחק</span></button></div></div>`).join(''):'<div class="sub">אין ארוחות להיום</div>';
 }
 function getLast7Days(){const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i);days.push(dateKeyLocal(d))}return days}
 function renderActivities(){
- const todayKey=today();
- const todayArr=state.activities.filter(x=>x.date===todayKey).sort((a,b)=>b.time.localeCompare(a.time));
- q('activityList').innerHTML=todayArr.length?todayArr.map(x=>`<div class="listitem editable-listitem"><div class="list-main"><strong>${escapeHtml(x.type||'פעילות')}</strong><div class="sub">${+x.minutes||0} דקות · ${escapeHtml(x.time||'')}</div></div><div class="list-actions"><div class="list-values">${+x.calories||0} קק״ל</div><button type="button" class="delete-entry" data-delete-activity="${escapeAttr(String(x.id))}" aria-label="מחק פעילות" title="מחק פעילות">🗑️</button></div></div>`).join(''):'<div class="sub">אין פעילות להיום</div>';
- const days=getLast7Days();
- const week=state.activities.filter(x=>days.includes(x.date));
- const mins=sum(week,'minutes'), calories=sum(week,'calories'), count=week.length;
- const target=+(state.profile.activityTarget||150); const remain=Math.max(0,target-mins); const pct=target?Math.min(100,mins/target*100):0;
- q('weekActivityTarget').textContent=target; q('weekActivityMinutes').textContent=mins; q('weekActivityCalories').textContent=calories; q('weekActivityCount').textContent=count; q('activityRingValue').textContent=remain;
- const ring=q('activityRing'); if(ring)ring.style.background=`conic-gradient(#16a34a ${pct}%,#e8eaee ${pct}%)`;
- const status=q('activityWeekStatus'); const txt=q('activityProgressText');
- if(mins>=target){status.textContent='היעד הושג';status.className='calorie-status good';txt.textContent=`מצוין — השלמת ${mins} דקות פעילות השבוע`}
- else if(mins>=target*.75){status.textContent='קרוב ליעד';status.className='calorie-status warning';txt.textContent=`נותרו עוד ${remain} דקות להשלמת היעד השבועי`}
- else{status.textContent='בתהליך';status.className='calorie-status ok';txt.textContent=`בוצעו ${mins} מתוך ${target} דקות — נותרו ${remain}`}
- const totalCount=state.activities.length,totalMinutes=sum(state.activities,'minutes'),totalCalories=sum(state.activities,'calories');q('totalActivityCount').textContent=totalCount;q('totalActivityMinutes').textContent=totalMinutes;q('totalActivityCalories').textContent=totalCalories;
- const avg=count?Math.round(mins/7):0;q('activityWeekAverage').textContent=`ממוצע: ${avg} דק׳ ליום`;
+ const todayArr=state.activities.filter(x=>x.date===today()).sort((a,b)=>(b.time||'').localeCompare(a.time||''));
+ q('activityList').innerHTML=todayArr.length?todayArr.map(x=>`<div class="listitem editable-listitem"><div class="list-main"><strong>${escapeHtml(x.type||'פעילות')}</strong><div class="sub">${+x.minutes||0} דקות · ${escapeHtml(x.time||'')}</div></div><div class="list-actions"><div class="list-values">${+x.calories||0} קק״ל</div><button type="button" class="delete-entry delete-entry-labeled" data-delete-activity="${escapeAttr(String(x.id))}" aria-label="מחק פעילות" title="מחק פעילות"><span aria-hidden="true">🗑️</span><span>מחק</span></button></div></div>`).join(''):'<div class="sub">אין פעילות להיום</div>';
+ const days=lastLocalDays(7),weekActs=state.activities.filter(x=>days.includes(x.date)),mins=sum(weekActs,'minutes'),cals=sum(weekActs,'calories'),count=weekActs.length,target=+state.profile.weeklyActivityTarget||150;
+ const remain=Math.max(0,target-mins),pct=target?Math.min(100,mins/target*100):0;
+ if(q('activityWeekRing'))q('activityWeekRing').style.background=`conic-gradient(#16a34a ${pct}%,#e8eaee ${pct}%)`;
+ if(q('activityWeekRemaining'))q('activityWeekRemaining').textContent=remain;
+ if(q('activityWeekTarget'))q('activityWeekTarget').textContent=target;
+ if(q('activityWeekMinutes'))q('activityWeekMinutes').textContent=mins;
+ if(q('activityWeekCalories'))q('activityWeekCalories').textContent=cals;
+ if(q('activityWeekSessions'))q('activityWeekSessions').textContent=count;
+ const status=q('activityWeekStatus'),txt=q('activityWeekText');
+ if(status&&txt){if(mins>=target){status.textContent='היעד הושג';status.className='calorie-status';txt.textContent=`כל הכבוד — ביצעת ${mins} דקות פעילות השבוע`}else if(mins>=target*.75){status.textContent='קרוב ליעד';status.className='calorie-status warning';txt.textContent=`נותרו עוד ${remain} דקות להשלמת היעד השבועי`}else{status.textContent='בתהליך';status.className='calorie-status ok';txt.textContent=`בוצעו ${mins} מתוך ${target} דקות — נותרו ${remain}`}}
+ const totalCount=state.activities.length,totalMinutes=sum(state.activities,'minutes'),totalCalories=sum(state.activities,'calories');if(q('totalActivityCount'))q('totalActivityCount').textContent=totalCount;if(q('totalActivityMinutes'))q('totalActivityMinutes').textContent=totalMinutes;if(q('totalActivityCalories'))q('totalActivityCalories').textContent=totalCalories;
+ const avg=count?Math.round(mins/7):0;if(q('activityWeekAverage'))q('activityWeekAverage').textContent=`ממוצע: ${avg} דק׳ ליום`;
  drawActivityChart(days);
 }
 function drawActivityChart(days){
@@ -96,7 +99,7 @@ q('saveMeal').onclick=()=>{state.meals.push({id:`meal-${Date.now()}`,date:today(
 q('saveActivity').onclick=()=>{const rec={id:`activity-${Date.now()}`,date:today(),time:new Date().toTimeString().slice(0,5),type:q('actType').value,minutes:+q('actMinutes').value||0,calories:+q('actCalories').value||0};state.activities.push(rec);q('actMinutes').value='';q('actCalories').value='';save();renderToday();renderActivities();requestAnimationFrame(()=>renderActivities())};
 q('saveHealth').onclick=()=>{const keys=['sbp','dbp','restingHr','totalChol','ldl','hdl','triglycerides','fastingGlucose','hba1c','egfr','creatinine','uacr','apoB','lpa','prevent10','prevent30'];const rec={date:q('healthDate').value||today()};keys.forEach(k=>rec[k]=+q('h_'+k).value||'');rec.smoking=q('h_smoking').checked;rec.diabetes=q('h_diabetes').checked;rec.bpMeds=q('h_bpMeds').checked;state.health=state.health.filter(x=>x.date!==rec.date);state.health.push(rec);save()};
 function buildBackupFile(){
-  const payload={app:'Diet Control',version:'3.8',schema:1,exportedAt:new Date().toISOString(),data:state};
+  const payload={app:'Diet Control',version:'3.9',schema:1,exportedAt:new Date().toISOString(),data:state};
   const text=JSON.stringify(payload,null,2);
   const filename=`Diet_Control_Backup_${today()}.json`;
   return {payload,text,filename,file:new File([text],[filename].join(''),{type:'application/json;charset=utf-8'})};
@@ -152,6 +155,10 @@ q('shareBackup').onclick=async()=>{
   }
 };
 q('importBackup').onchange=async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const text=await file.text();const parsed=JSON.parse(text);const incoming=parsed.data||parsed;if(!incoming||typeof incoming!=='object')throw new Error('invalid');if(!confirm('לייבא את הגיבוי ולהחליף את הנתונים הנוכחיים באפליקציה?')){e.target.value='';return}state=incoming;state.profile={...defaultState.profile,...(state.profile||{})};state.metrics=state.metrics||[];state.meals=state.meals||[];state.activities=state.activities||[];state.health=state.health||[];
+// v3.9 migration: ensure every legacy meal/activity has a stable id so delete works on old data too.
+state.meals=state.meals.map((x,i)=>({...x,id:x.id??`meal-legacy-${x.date||'na'}-${x.time||'na'}-${i}`}));
+state.activities=state.activities.map((x,i)=>({...x,id:x.id??`activity-legacy-${x.date||'na'}-${x.time||'na'}-${i}`}));
+localStorage.setItem(LS,JSON.stringify(state));
 state.meals=state.meals.map((x,i)=>({...x,id:x.id??`meal-${x.date||'x'}-${x.time||'x'}-${i}`}));
 state.activities=state.activities.map((x,i)=>({...x,id:x.id??`activity-${x.date||'x'}-${x.time||'x'}-${i}`}));save();q('backupStatus').textContent='הגיבוי יובא בהצלחה.';e.target.value=''}catch(err){q('backupStatus').textContent='לא ניתן לקרוא את קובץ הגיבוי.'}};
 

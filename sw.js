@@ -1,4 +1,4 @@
-const C='diet-control-v3.8';
+const C='diet-control-v3.9';
 const PRECACHE=['./icons/diet-control-icon-192-v3.png','./icons/diet-control-icon-512-v3.png','./icons/diet-control-apple-touch-v3.png'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(PRECACHE)))});
 self.addEventListener('activate',e=>{e.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==C).map(k=>caches.delete(k)))),self.clients.claim()]))});

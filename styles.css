@@ -184,3 +184,12 @@ main{padding-bottom:164px}
 
 /* v3.8 – editable meal/activity rows */
 .editable-listitem{align-items:center}.list-main{min-width:0;flex:1}.list-actions{display:flex;align-items:center;gap:12px;text-align:left}.list-values{white-space:nowrap}.delete-entry{width:44px;height:44px;display:grid;place-items:center;border:1px solid #fecaca;background:#fff1f2;color:#b91c1c;border-radius:13px;font-size:20px;cursor:pointer;padding:0}.delete-entry:active{transform:scale(.96);background:#ffe4e6}@media(max-width:480px){.list-actions{gap:8px}.delete-entry{width:42px;height:42px;font-size:19px}}
+
+
+/* v3.9 – unmistakable delete buttons on every meal/activity row */
+.editable-listitem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;}
+.list-actions{display:flex;align-items:center;gap:10px;justify-content:flex-end;}
+.delete-entry-labeled{width:auto !important;min-width:78px !important;height:44px !important;padding:0 12px !important;display:inline-flex !important;align-items:center;justify-content:center;gap:6px;border:1px solid #fecaca !important;background:#fee2e2 !important;color:#b91c1c !important;border-radius:12px !important;font-size:15px !important;font-weight:800 !important;white-space:nowrap;box-shadow:0 1px 3px rgba(185,28,28,.08);}
+.delete-entry-labeled span{display:inline !important;font-size:inherit !important;margin:0 !important;}
+.delete-entry-labeled:hover{background:#fecaca !important;}
+@media(max-width:480px){.editable-listitem{grid-template-columns:1fr}.list-actions{width:100%;justify-content:space-between;border-top:1px solid #f3f4f6;padding-top:9px}.delete-entry-labeled{min-width:88px !important;height:42px !important;font-size:14px !important}.list-values{text-align:right}}
