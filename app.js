@@ -90,17 +90,73 @@ q('saveMetrics').onclick=()=>{const rec={date:today(),weight:+q('inWeight').valu
 q('saveMeal').onclick=()=>{state.meals.push({id:Date.now(),date:today(),time:new Date().toTimeString().slice(0,5),desc:q('mealDesc').value,calories:+q('mealCalories').value||0,protein:+q('mealProtein').value||0});q('mealDesc').value='';q('mealCalories').value='';q('mealProtein').value='';save()};
 q('saveActivity').onclick=()=>{state.activities.push({id:Date.now(),date:today(),time:new Date().toTimeString().slice(0,5),type:q('actType').value,minutes:+q('actMinutes').value||0,calories:+q('actCalories').value||0});q('actMinutes').value='';q('actCalories').value='';save()};
 q('saveHealth').onclick=()=>{const keys=['sbp','dbp','restingHr','totalChol','ldl','hdl','triglycerides','fastingGlucose','hba1c','egfr','creatinine','uacr','apoB','lpa','prevent10','prevent30'];const rec={date:q('healthDate').value||today()};keys.forEach(k=>rec[k]=+q('h_'+k).value||'');rec.smoking=q('h_smoking').checked;rec.diabetes=q('h_diabetes').checked;rec.bpMeds=q('h_bpMeds').checked;state.health=state.health.filter(x=>x.date!==rec.date);state.health.push(rec);save()};
-q('exportBackup').onclick=()=>{const payload={app:'Diet Control',version:'3.4',exportedAt:new Date().toISOString(),data:state};const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=`Diet_Control_Backup_${today()}.json`;document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);q('backupStatus').textContent='קובץ הגיבוי יוצא בהצלחה.'};
+function buildBackupFile(){
+  const payload={app:'Diet Control',version:'3.6',schema:1,exportedAt:new Date().toISOString(),data:state};
+  const text=JSON.stringify(payload,null,2);
+  const filename=`Diet_Control_Backup_${today()}.json`;
+  return {payload,text,filename,file:new File([text],[filename].join(''),{type:'application/json;charset=utf-8'})};
+}
+q('exportBackup').onclick=async()=>{
+  try{
+    const {text,filename}=buildBackupFile();
+    // Prefer the native save picker when a browser supports it.
+    if('showSaveFilePicker' in window){
+      try{
+        const handle=await window.showSaveFilePicker({suggestedName:filename,types:[{description:'Diet Control backup',accept:{'application/json':['.json']}}]});
+        const writable=await handle.createWritable();
+        await writable.write(text);
+        await writable.close();
+        q('backupStatus').textContent=`הגיבוי נשמר בהצלחה: ${filename}`;
+        return;
+      }catch(err){if(err&&err.name==='AbortError'){q('backupStatus').textContent='שמירת הגיבוי בוטלה.';return;}}
+    }
+    // Android/Chrome fallback: keep the Blob URL alive long enough for the download manager.
+    const blob=new Blob([text],{type:'application/json;charset=utf-8'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url;
+    a.download=filename;
+    a.rel='noopener';
+    a.style.display='none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{try{a.remove();URL.revokeObjectURL(url)}catch(_){ }},60000);
+    q('backupStatus').textContent=`הקובץ נשלח להורדות: ${filename}. חפש אותו בתיקיית Downloads.`;
+  }catch(err){
+    console.error('Backup export failed',err);
+    q('backupStatus').textContent='הייצוא נכשל. נסה את הכפתור "שתף / שמור גיבוי".';
+  }
+};
+q('shareBackup').onclick=async()=>{
+  try{
+    const {text,filename}=buildBackupFile();
+    const file=new File([text],filename,{type:'application/json'});
+    if(navigator.share && (!navigator.canShare || navigator.canShare({files:[file]}))){
+      await navigator.share({title:'Diet Control – גיבוי נתונים',text:'קובץ גיבוי של Diet Control',files:[file]});
+      q('backupStatus').textContent='קובץ הגיבוי נמסר למנגנון השיתוף של Android.';
+    }else{
+      const blob=new Blob([text],{type:'application/json;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');a.href=url;a.download=filename;a.style.display='none';document.body.appendChild(a);a.click();
+      setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},60000);
+      q('backupStatus').textContent=`השיתוף אינו נתמך בדפדפן זה; הקובץ נשלח להורדות: ${filename}`;
+    }
+  }catch(err){
+    if(err&&err.name==='AbortError')q('backupStatus').textContent='השיתוף בוטל.';
+    else {console.error('Backup share failed',err);q('backupStatus').textContent='לא ניתן לשתף את קובץ הגיבוי בדפדפן זה.';}
+  }
+};
 q('importBackup').onchange=async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const text=await file.text();const parsed=JSON.parse(text);const incoming=parsed.data||parsed;if(!incoming||typeof incoming!=='object')throw new Error('invalid');if(!confirm('לייבא את הגיבוי ולהחליף את הנתונים הנוכחיים באפליקציה?')){e.target.value='';return}state=incoming;state.profile={...defaultState.profile,...(state.profile||{})};state.metrics=state.metrics||[];state.meals=state.meals||[];state.activities=state.activities||[];state.health=state.health||[];save();q('backupStatus').textContent='הגיבוי יובא בהצלחה.';e.target.value=''}catch(err){q('backupStatus').textContent='לא ניתן לקרוא את קובץ הגיבוי.'}};
 q('healthDate').value=today();
 let deferredInstallPrompt=window.__dietInstallPrompt||null;const installBtn=q('installBtn');
 function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true}
-function updateInstallButton(){if(!installBtn)return;installBtn.classList.remove('ready','waiting','installed');if(isStandalone()){installBtn.textContent='✓ מותקן';installBtn.classList.add('installed');installBtn.disabled=true}else if(deferredInstallPrompt||window.__dietInstallPrompt){deferredInstallPrompt=deferredInstallPrompt||window.__dietInstallPrompt;installBtn.textContent='⬇ התקן עכשיו';installBtn.classList.add('ready');installBtn.disabled=false}else{installBtn.textContent='⬇ התקנה';installBtn.classList.add('waiting');installBtn.disabled=false}}
+function updateInstallButton(){if(!installBtn)return;if(isStandalone()){installBtn.hidden=true;installBtn.style.display='none';return}installBtn.hidden=false;installBtn.style.display='';installBtn.classList.remove('ready','waiting','installed');if(deferredInstallPrompt||window.__dietInstallPrompt){deferredInstallPrompt=deferredInstallPrompt||window.__dietInstallPrompt;installBtn.textContent='⬇ התקן עכשיו';installBtn.classList.add('ready');installBtn.disabled=false}else{installBtn.textContent='⬇ התקנה';installBtn.classList.add('waiting');installBtn.disabled=false}}
 window.addEventListener('dietinstallready',()=>{deferredInstallPrompt=window.__dietInstallPrompt;updateInstallButton()});
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;window.__dietInstallPrompt=e;updateInstallButton()});
-window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;window.__dietInstallPrompt=null;updateInstallButton()});
+window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;window.__dietInstallPrompt=null;if(installBtn){installBtn.hidden=true;installBtn.style.display='none'}updateInstallButton()});
 const installHelp=q('installHelp'),installHelpClose=q('installHelpClose');if(installHelpClose)installHelpClose.onclick=()=>installHelp.hidden=true;if(installHelp)installHelp.onclick=e=>{if(e.target===installHelp)installHelp.hidden=true};
 if(installBtn)installBtn.onclick=async()=>{if(isStandalone())return;deferredInstallPrompt=deferredInstallPrompt||window.__dietInstallPrompt;if(deferredInstallPrompt){try{deferredInstallPrompt.prompt();const choice=await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;window.__dietInstallPrompt=null;if(choice&&choice.outcome==='accepted'){installBtn.textContent='מתקין…'}updateInstallButton()}catch(err){console.error('Install prompt failed',err);if(installHelp)installHelp.hidden=false}return}if(installHelp)installHelp.hidden=false;};
+const standaloneMedia=window.matchMedia('(display-mode: standalone)');if(standaloneMedia.addEventListener)standaloneMedia.addEventListener('change',updateInstallButton);else if(standaloneMedia.addListener)standaloneMedia.addListener(updateInstallButton);
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});renderAll();updateInstallButton();const initialScreen=(location.hash||'#today').replace('#','');go(validScreen(initialScreen)?initialScreen:'today',false);window.addEventListener('hashchange',()=>{const s=(location.hash||'#today').replace('#','');if(validScreen(s))go(s,false)});
 
 window.addEventListener('resize',()=>{if(document.querySelector('[data-screen="activity"]')?.classList.contains('active'))renderActivities()});window.addEventListener('pageshow',updateInstallButton);

@@ -175,3 +175,8 @@ main{padding-bottom:164px}
 .activity-week-chart-card canvas{margin-top:10px}.activity-progress-text{margin-top:14px;padding:10px 12px;border-radius:12px;background:#f3f4f6;font-weight:700;text-align:center}.activity-entry-card{border-top:4px solid #16a34a}
 .install-help-backdrop[hidden]{display:none}.install-help-backdrop{position:fixed;inset:0;background:rgba(17,24,39,.55);z-index:99;display:grid;place-items:center;padding:18px}.install-help-card{position:relative;background:#fff;border-radius:22px;padding:22px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.25)}.install-help-card h2{padding-left:32px}.install-help-card li{margin:10px 0;line-height:1.45}.install-help-close{position:absolute;top:10px;left:12px;border:0;background:#f3f4f6;border-radius:50%;width:38px;height:38px;font-size:26px;line-height:1}
 @media(max-width:480px){.activity-calorie-card .ring{width:116px;height:116px}.activity-calorie-card{padding-top:14px}.activity-week-chart-card{padding-top:14px}}
+
+/* v3.6 – reliable backup export */
+.backup-actions{grid-template-columns:repeat(3,1fr)}
+#shareBackup{background:#0f766e;color:#fff;border-color:#0f766e}
+@media(max-width:620px){.backup-actions{grid-template-columns:1fr}}
