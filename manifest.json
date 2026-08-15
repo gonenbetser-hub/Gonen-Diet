@@ -1,5 +1,5 @@
 {
-  "id": "./diet-control-v3",
+  "id": "./diet-control",
   "name": "Diet Control",
   "short_name": "Diet Control",
   "description": "ניהול ירידה במשקל ובריאות קרדיו-מטבולית",
@@ -11,14 +11,73 @@
   "lang": "he",
   "dir": "rtl",
   "icons": [
-    {"src":"icons/diet-control-icon-192-v3.png","sizes":"192x192","type":"image/png","purpose":"any"},
-    {"src":"icons/diet-control-icon-512-v3.png","sizes":"512x512","type":"image/png","purpose":"any"},
-    {"src":"icons/diet-control-icon-512-v3.png","sizes":"512x512","type":"image/png","purpose":"maskable"}
+    {
+      "src": "icons/diet-control-icon-192-v3.png?v=35",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/diet-control-icon-512-v3.png?v=35",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/diet-control-icon-512-v3.png?v=35",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    {"name":"היום","short_name":"היום","url":"./index.html#today","icons":[{"src":"icons/diet-control-icon-192-v3.png","sizes":"192x192","type":"image/png"}]},
-    {"name":"ארוחות","short_name":"ארוחות","url":"./index.html#meals","icons":[{"src":"icons/diet-control-icon-192-v3.png","sizes":"192x192","type":"image/png"}]},
-    {"name":"בריאות","short_name":"בריאות","url":"./index.html#health","icons":[{"src":"icons/diet-control-icon-192-v3.png","sizes":"192x192","type":"image/png"}]},
-    {"name":"דוחות","short_name":"דוחות","url":"./index.html#reports","icons":[{"src":"icons/diet-control-icon-192-v3.png","sizes":"192x192","type":"image/png"}]}
+    {
+      "name": "היום",
+      "short_name": "היום",
+      "url": "./index.html#today",
+      "icons": [
+        {
+          "src": "icons/diet-control-icon-192-v3.png?v=35",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "ארוחות",
+      "short_name": "ארוחות",
+      "url": "./index.html#meals",
+      "icons": [
+        {
+          "src": "icons/diet-control-icon-192-v3.png?v=35",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "פעילות",
+      "short_name": "פעילות",
+      "url": "./index.html#activity",
+      "icons": [
+        {
+          "src": "icons/diet-control-icon-192-v3.png?v=35",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "בריאות",
+      "short_name": "בריאות",
+      "url": "./index.html#health",
+      "icons": [
+        {
+          "src": "icons/diet-control-icon-192-v3.png?v=35",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
   ]
 }

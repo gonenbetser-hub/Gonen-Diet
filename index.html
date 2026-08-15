@@ -1,273 +1,258 @@
-<!doctype html>
-<html lang="he" dir="rtl">
+<!DOCTYPE html>
+
+<html dir="rtl" lang="he">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#111827" />
-  <meta name="application-name" content="Diet Control" />
-  <meta name="apple-mobile-web-app-title" content="Diet Control" />
-  <meta name="mobile-web-app-capable" content="yes" />
-  <script>window.__dietInstallPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__dietInstallPrompt=e;window.dispatchEvent(new Event('dietinstallready'));});</script>
-  <title>Diet Control</title>
-  <link rel="manifest" href="manifest-diet-control-v3.json" />
-  <link rel="icon" type="image/png" sizes="192x192" href="icons/diet-control-icon-192-v3.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="icons/diet-control-apple-touch-v3.png" />
-  <link rel="stylesheet" href="styles.css" />
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1, viewport-fit=cover" name="viewport"/>
+<meta content="#111827" name="theme-color"/>
+<meta content="Diet Control" name="application-name"/>
+<meta content="Diet Control" name="apple-mobile-web-app-title"/>
+<meta content="yes" name="mobile-web-app-capable"/>
+<script>window.__dietInstallPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__dietInstallPrompt=e;window.dispatchEvent(new Event('dietinstallready'));});</script>
+<title>Diet Control</title>
+<link href="manifest.json?v=35" rel="manifest"/>
+<link href="icons/diet-control-icon-192-v3.png" rel="icon" sizes="192x192" type="image/png"/>
+<link href="icons/diet-control-apple-touch-v3.png" rel="apple-touch-icon" sizes="180x180"/>
+<link href="styles.css" rel="stylesheet"/>
 </head>
 <body>
 <div id="app">
-  <header class="topbar">
-    <div>
-      <div class="eyebrow">מרכז בריאות מטבולית ומשקל <span class="version-badge">v3.4</span></div>
-      <h1 id="pageTitle">היום</h1>
-    </div>
-    <div class="top-actions"><button class="install-btn" id="installBtn" type="button">⬇ התקנה</button><button class="icon-btn" id="settingsBtn" aria-label="הגדרות">⚙️</button></div>
-  </header>
-
-  <main>
-    <section class="screen active" data-screen="today">
-      <div class="card calorie-card calorie-card-home">
-        <div class="row between"><h2>קלוריות היום</h2><button class="text-btn calorie-action" data-go="meals">הוסף ארוחה</button></div>
-        <div class="calorie-ring-wrap">
-          <div class="ring" id="calorieRing"><span id="calorieRemaining">—</span><small>נותרו</small></div>
-          <div class="calstats colorful-stats">
-            <div class="calstat target"><span>יעד אכילה</span><strong id="calTarget">—</strong></div>
-            <div class="calstat eaten"><span>נאכל</span><strong id="calEaten">—</strong></div>
-            <div class="calstat burned"><span>פעילות</span><strong id="calBurned">—</strong></div>
-            <div class="calstat net"><span>מאזן נטו</span><strong id="calNet">—</strong></div>
-          </div>
-        </div>
-      </div>
-      <div class="hero card">
-        <div>
-          <span class="label">משקל נוכחי</span>
-          <div class="big" id="todayWeight">—</div>
-          <div class="sub" id="weightDelta">הזן משקל כדי להתחיל</div>
-        </div>
-        <div class="goalbox">
-          <span class="label">יעד</span>
-          <strong id="goalWeight">—</strong>
-          <div class="progress"><div id="goalProgress"></div></div>
-        </div>
-      </div>
-
-      <div class="grid2">
-        <div class="metric card"><span>BMI</span><strong id="mBMI">—</strong><small id="mBMIStatus">—</small></div>
-        <div class="metric card"><span>מותניים/גובה</span><strong id="mWHtR">—</strong><small id="mWHtRStatus">—</small></div>
-        <div class="metric card"><span>מותניים/ירכיים</span><strong id="mWHR">—</strong><small id="mWHRStatus">—</small></div>
-        <div class="metric card"><span>היקף מותניים</span><strong id="mWaist">—</strong><small id="mWaistStatus">—</small></div>
-      </div>
-
-      <div class="card health-card">
-        <div class="row between"><div><span class="label">מצב כללי</span><h2 id="overallStatus">נדרשים נתונים</h2></div><div class="score" id="healthScore">—</div></div>
-        <p id="overallText">הזן גיל, מין, גובה, משקל והיקפים כדי לקבל תמונת מצב.</p>
-      </div>
-
-      <div class="card">
-        <div class="row between"><h2>בריאות קרדיו־מטבולית</h2><button class="text-btn" data-go="health">לפרטים</button></div>
-        <div class="grid2 compact-grid">
-          <div class="metric mini"><span>לחץ דם</span><strong id="homeBP">—</strong><small id="homeBPStatus">—</small></div>
-          <div class="metric mini"><span>HbA1c</span><strong id="homeA1c">—</strong><small>אחוז</small></div>
-          <div class="metric mini"><span>LDL</span><strong id="homeLDL">—</strong><small>mg/dL</small></div>
-          <div class="metric mini"><span>Non-HDL</span><strong id="homeNonHDL">—</strong><small>מחושב</small></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="row between"><h2>חלבון</h2><span id="proteinPct">0%</span></div>
-        <div class="progress large"><div id="proteinProgress"></div></div>
-        <div class="sub" id="proteinText">0 / 0 גרם</div>
-      </div>
-    </section>
-
-    <section class="screen" data-screen="metrics">
-      <div class="card">
-        <h2>הזנת מדדי גוף</h2>
-        <div class="form-grid">
-          <label>משקל (ק״ג)<input id="inWeight" type="number" step="0.1"></label>
-          <label>היקף מותניים (ס״מ)<input id="inWaist" type="number" step="0.1"></label>
-          <label>היקף ירכיים (ס״מ)<input id="inHip" type="number" step="0.1"></label>
-          <label>אחוז שומן %<input id="inBodyFat" type="number" step="0.1"></label>
-        </div>
-        <button class="primary" id="saveMetrics">שמור מדידה להיום</button>
-      </div>
-      <div class="card">
-        <h2>יעדים ומצב</h2>
-        <div id="targetsTable" class="targets"></div>
-      </div>
-      <div class="card">
-        <h2>מגמת משקל</h2>
-        <canvas id="weightChart" height="180"></canvas>
-      </div>
-    </section>
-
-    <section class="screen" data-screen="meals">
-      <div class="card calorie-card calorie-card-meals">
-        <div class="row between"><h2>קלוריות היום</h2><span class="calorie-status" id="mealCalorieStatus">מאזן יומי</span></div>
-        <div class="calorie-ring-wrap">
-          <div class="ring" id="mealCalorieRing"><span id="mealCalorieRemaining">—</span><small>נותרו</small></div>
-          <div class="calstats colorful-stats">
-            <div class="calstat target"><span>יעד אכילה</span><strong id="mealCalTarget">—</strong></div>
-            <div class="calstat eaten"><span>נאכל</span><strong id="mealCalEaten">—</strong></div>
-            <div class="calstat burned"><span>פעילות</span><strong id="mealCalBurned">—</strong></div>
-            <div class="calstat net"><span>מאזן נטו</span><strong id="mealCalNet">—</strong></div>
-          </div>
-        </div>
-      </div>
-      <div class="card">
-        <h2>הוסף ארוחה</h2>
-        <label>תיאור הארוחה<textarea id="mealDesc" placeholder="לדוגמה: 2 ביצים, 2 פרוסות לחם, סלט וכף חומוס"></textarea></label>
-        <div class="form-grid">
-          <label>קלוריות<input id="mealCalories" type="number"></label>
-          <label>חלבון (גרם)<input id="mealProtein" type="number"></label>
-        </div>
-        <button class="primary" id="saveMeal">שמור ארוחה</button>
-      </div>
-      <div class="card"><h2>היום</h2><div id="mealList"></div></div>
-    </section>
-
-    <section class="screen" data-screen="activity">
-      <div class="card calorie-card activity-calorie-card">
-        <div class="row between"><h2>פעילות השבוע</h2><span class="calorie-status" id="activityWeekStatus">יעד שבועי</span></div>
-        <div class="calorie-ring-wrap">
-          <div class="ring activity-week-ring" id="activityRing"><span id="activityRingValue">0</span><small>דקות השבוע</small></div>
-          <div class="calstats colorful-stats">
-            <div class="calstat target"><span>יעד שבועי</span><strong id="weekActivityTarget">150</strong><small>דקות</small></div>
-            <div class="calstat eaten"><span>בוצע</span><strong id="weekActivityMinutes">0</strong><small>דקות</small></div>
-            <div class="calstat burned"><span>קלוריות</span><strong id="weekActivityCalories">0</strong><small>השבוע</small></div>
-            <div class="calstat net"><span>אימונים</span><strong id="weekActivityCount">0</strong><small>השבוע</small></div>
-          </div>
-        </div>
-        <div class="activity-progress-text" id="activityProgressText">הזן פעילות כדי להתחיל</div>
-      </div>
-
-      <div class="card">
-        <h2>הוסף פעילות</h2>
-        <div class="form-grid">
-          <label>סוג<select id="actType"><option>הליכה</option><option>ריצה</option><option>כוח</option><option>כדורסל</option><option>אופניים</option><option>אחר</option></select></label>
-          <label>משך (דקות)<input id="actMinutes" type="number"></label>
-          <label>קלוריות שנשרפו<input id="actCalories" type="number"></label>
-        </div>
-        <button class="primary" id="saveActivity">שמור פעילות</button>
-      </div>
-
-      <div class="card"><h2>פעילות היום</h2><div id="activityList"></div></div>
-
-      <div class="card activity-week-chart-card">
-        <div class="row between"><h2>פעילות ב־7 הימים האחרונים</h2><span class="calorie-status ok">דקות ליום</span></div>
-        <canvas id="activityChart" height="210"></canvas>
-        <div class="week-chart-legend"><span><i class="legend-dot activity-dot"></i> דקות פעילות</span><strong id="activityWeekAverage">ממוצע: 0 דק׳</strong></div>
-      </div>
-
-      <div class="card cumulative-card">
-        <h2>מצטבר מתחילת המעקב</h2>
-        <div class="calstats colorful-stats cumulative-calstats">
-          <div class="calstat net"><span>סה״כ אימונים</span><strong id="totalActivityCount">0</strong></div>
-          <div class="calstat eaten"><span>סה״כ דקות</span><strong id="totalActivityMinutes">0</strong></div>
-          <div class="calstat burned"><span>סה״כ קלוריות</span><strong id="totalActivityCalories">0</strong></div>
-        </div>
-      </div>
-    </section>
-
-    <section class="screen" data-screen="health">
-      <div class="card">
-        <h2>מדדי לב, סוכר ושומנים</h2>
-        <label>תאריך מדידה<input id="healthDate" type="date"></label>
-        <h3>לחץ דם ודופק</h3>
-        <div class="form-grid">
-          <label>סיסטולי (mmHg)<input id="h_sbp" type="number"></label>
-          <label>דיאסטולי (mmHg)<input id="h_dbp" type="number"></label>
-          <label>דופק במנוחה<input id="h_restingHr" type="number"></label>
-        </div>
-        <h3>שומני דם</h3>
-        <div class="form-grid">
-          <label>כולסטרול כללי (mg/dL)<input id="h_totalChol" type="number" step="0.1"></label>
-          <label>LDL-C (mg/dL)<input id="h_ldl" type="number" step="0.1"></label>
-          <label>HDL-C (mg/dL)<input id="h_hdl" type="number" step="0.1"></label>
-          <label>טריגליצרידים (mg/dL)<input id="h_triglycerides" type="number" step="0.1"></label>
-          <label>ApoB (אופציונלי)<input id="h_apoB" type="number" step="0.1"></label>
-          <label>Lp(a) (אופציונלי)<input id="h_lpa" type="number" step="0.1"></label>
-        </div>
-        <h3>סוכר</h3>
-        <div class="form-grid">
-          <label>גלוקוז בצום (mg/dL)<input id="h_fastingGlucose" type="number" step="0.1"></label>
-          <label>HbA1c (%)<input id="h_hba1c" type="number" step="0.1"></label>
-        </div>
-        <h3>כליה</h3>
-        <div class="form-grid">
-          <label>קריאטינין (mg/dL)<input id="h_creatinine" type="number" step="0.01"></label>
-          <label>eGFR<input id="h_egfr" type="number" step="0.1"></label>
-          <label>UACR (mg/g)<input id="h_uacr" type="number" step="0.1"></label>
-        </div>
-        <h3>גורמי סיכון</h3>
-        <div class="checks">
-          <label class="check"><input id="h_smoking" type="checkbox"> עישון נוכחי</label>
-          <label class="check"><input id="h_diabetes" type="checkbox"> סוכרת ידועה</label>
-          <label class="check"><input id="h_bpMeds" type="checkbox"> טיפול תרופתי בלחץ דם</label>
-        </div>
-        <h3>PREVENT</h3>
-        <p class="note">הזן כאן תוצאה שחושבה במחשבון PREVENT הרשמי. האפליקציה אינה מייצרת הערכת PREVENT משוערת.</p>
-        <div class="form-grid">
-          <label>סיכון 10 שנים (%)<input id="h_prevent10" type="number" step="0.1"></label>
-          <label>סיכון 30 שנים (%)<input id="h_prevent30" type="number" step="0.1"></label>
-        </div>
-        <button class="primary" id="saveHealth">שמור נתוני בריאות</button>
-      </div>
-      <div class="card">
-        <h2>מדדים מחושבים ויעדים</h2>
-        <div id="healthDerived" class="targets"></div>
-        <p class="note">* ערכי גלוקוז/HbA1c אינם אבחנה בפני עצמם; אבחון דורש הקשר רפואי ולעיתים בדיקה חוזרת.</p>
-      </div>
-      <div class="card">
-        <h2>PREVENT — התאמה</h2>
-        <strong id="preventEligibility">—</strong>
-        <div class="sub" id="preventStored">—</div>
-        <p class="note">PREVENT מיועד להערכת סיכון קרדיווסקולרי במניעה ראשונית. יעדי טיפול נקבעים לפי מצב רפואי ורמת סיכון כוללת.</p>
-      </div>
-      <div class="card"><h2>היסטוריית מדידות</h2><div id="healthHistory"></div></div>
-    </section>
-
-    <section class="screen" data-screen="reports">
-      <div class="card"><h2>סיכום 7 ימים</h2><div id="weeklySummary"></div></div>
-      <div class="card"><h2>התקדמות מול היעדים</h2><div id="reportTargets"></div></div>
-    </section>
-
-    <section class="screen" data-screen="settings">
-      <div class="card backup-card backup-card-prominent">
-        <h2>💾 גיבוי ושחזור נתונים</h2><div class="backup-location">כאן מייבאים ומייצאים את כל נתוני האפליקציה</div>
-        <p class="note">מומלץ לייצא גיבוי לפני הסרת האפליקציה, ניקוי נתוני Chrome או מעבר לכתובת אתר אחרת. הנתונים נשמרים מקומית במכשיר.</p>
-        <div class="backup-actions">
-          <button class="secondary" id="exportBackup">ייצא גיבוי</button>
-          <label class="secondary file-button">ייבא גיבוי<input id="importBackup" type="file" accept="application/json,.json"></label>
-        </div>
-        <div class="sub" id="backupStatus">נשמר גם עותק גיבוי מקומי אוטומטי.</div>
-      </div>
-      <div class="card">
-        <h2>פרופיל ויעדים</h2>
-        <div class="form-grid">
-          <label>תאריך לידה<input id="birthDate" type="date"></label>
-          <label>מין<select id="sex"><option value="male">גבר</option><option value="female">אישה</option></select></label>
-          <label>גובה (ס״מ)<input id="height" type="number" step="0.1"></label>
-          <label>משקל יעד (ק״ג)<input id="targetWeight" type="number" step="0.1"></label>
-          <label>יעד קלורי יומי<input id="calorieTarget" type="number"></label>
-          <label>יעד חלבון (גרם)<input id="proteinTarget" type="number"></label>
-          <label>יעד פעילות שבועי (דקות)<input id="weeklyActivityTarget" type="number" min="30" step="10"></label>
-        </div>
-        <button class="primary" id="saveSettings">שמור הגדרות</button>
-        <p class="note">יעדי BMI, יחס מותניים/גובה ויחס מותניים/ירכיים מחושבים לפי ספי סקר מקובלים. גיל משפיע על מדדים מסוימים ועל הערכת סיכון כוללת, אך לא כל סף משתנה לפי גיל.</p>
-      </div>
-    </section>
-  </main>
-
-  <nav class="bottomnav">
-    <button class="active" data-screen-btn="today" aria-label="היום"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/><path d="M9.5 20v-5.5h5V20"/></svg></span><span class="nav-label">היום</span></button>
-    <button data-screen-btn="meals" aria-label="ארוחות"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 3v7"/><path d="M7 3v7"/><path d="M9.5 3v7"/><path d="M7 10v11"/><path d="M15.5 3c2 1.8 3 4.2 3 7v11"/><path d="M15.5 3v8"/><path d="M12 14.5h7"/></svg></span><span class="nav-label">ארוחות</span></button>
-    <button data-screen-btn="activity" aria-label="פעילות"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="16.5" cy="4.8" r="1.9"/><path d="M14.5 7.5 12 10l-2.5 2.2"/><path d="m12 10 3 2 2.5 4"/><path d="M10.3 12.2 8 17l-3 4"/><path d="M15 12l-1 7"/><path d="M9.5 8.3 12 10"/></svg></span><span class="nav-label">פעילות</span></button>
-    <button data-screen-btn="metrics" aria-label="מדדים"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16.5 16.5 4a1.5 1.5 0 0 1 2.1 0l1.4 1.4a1.5 1.5 0 0 1 0 2.1L7.5 20a1.5 1.5 0 0 1-2.1 0L4 18.6a1.5 1.5 0 0 1 0-2.1Z"/><path d="m13 6 5 5"/><path d="m7.2 11.8 1.7 1.7"/><path d="m9.8 9.2 1.7 1.7"/><path d="m4.9 14.1 1.7 1.7"/></svg></span><span class="nav-label">מדדים</span></button>
-    <button data-screen-btn="health" aria-label="בריאות"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.7-7-10.1C5 7.1 7 5 9.6 5c1.5 0 2.7.7 3.4 1.8C13.7 5.7 14.9 5 16.4 5 19 5 21 7.1 21 9.9 21 15.3 12 20 12 20Z"/><path d="M7.3 12h2.7l1.2-2.2 2.2 4.4 1.3-2.2h1.9"/></svg></span><span class="nav-label">בריאות</span></button>
-    <button data-screen-btn="reports" aria-label="דוחות"><span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M7 20V11"/><path d="M12 20V7"/><path d="M17 20v-5"/></svg></span><span class="nav-label">דוחות</span></button>
-  </nav>
+<header class="topbar">
+<div>
+<div class="eyebrow">מרכז בריאות מטבולית ומשקל <span class="version-badge">v3.5</span></div>
+<h1 id="pageTitle">היום</h1>
 </div>
+<div class="top-actions"><button class="install-btn" id="installBtn" type="button">⬇ התקנה</button><button aria-label="הגדרות" class="icon-btn" id="settingsBtn">⚙️</button></div>
+</header>
+<main>
+<section class="screen active" data-screen="today">
+<div class="card calorie-card calorie-card-home">
+<div class="row between"><h2>קלוריות היום</h2><button class="text-btn calorie-action" data-go="meals">הוסף ארוחה</button></div>
+<div class="calorie-ring-wrap">
+<div class="ring" id="calorieRing"><span id="calorieRemaining">—</span><small>נותרו</small></div>
+<div class="calstats colorful-stats">
+<div class="calstat target"><span>יעד אכילה</span><strong id="calTarget">—</strong></div>
+<div class="calstat eaten"><span>נאכל</span><strong id="calEaten">—</strong></div>
+<div class="calstat burned"><span>פעילות</span><strong id="calBurned">—</strong></div>
+<div class="calstat net"><span>מאזן נטו</span><strong id="calNet">—</strong></div>
+</div>
+</div>
+</div>
+<div class="hero card">
+<div>
+<span class="label">משקל נוכחי</span>
+<div class="big" id="todayWeight">—</div>
+<div class="sub" id="weightDelta">הזן משקל כדי להתחיל</div>
+</div>
+<div class="goalbox">
+<span class="label">יעד</span>
+<strong id="goalWeight">—</strong>
+<div class="progress"><div id="goalProgress"></div></div>
+</div>
+</div>
+<div class="grid2">
+<div class="metric card"><span>BMI</span><strong id="mBMI">—</strong><small id="mBMIStatus">—</small></div>
+<div class="metric card"><span>מותניים/גובה</span><strong id="mWHtR">—</strong><small id="mWHtRStatus">—</small></div>
+<div class="metric card"><span>מותניים/ירכיים</span><strong id="mWHR">—</strong><small id="mWHRStatus">—</small></div>
+<div class="metric card"><span>היקף מותניים</span><strong id="mWaist">—</strong><small id="mWaistStatus">—</small></div>
+</div>
+<div class="card health-card">
+<div class="row between"><div><span class="label">מצב כללי</span><h2 id="overallStatus">נדרשים נתונים</h2></div><div class="score" id="healthScore">—</div></div>
+<p id="overallText">הזן גיל, מין, גובה, משקל והיקפים כדי לקבל תמונת מצב.</p>
+</div>
+<div class="card">
+<div class="row between"><h2>בריאות קרדיו־מטבולית</h2><button class="text-btn" data-go="health">לפרטים</button></div>
+<div class="grid2 compact-grid">
+<div class="metric mini"><span>לחץ דם</span><strong id="homeBP">—</strong><small id="homeBPStatus">—</small></div>
+<div class="metric mini"><span>HbA1c</span><strong id="homeA1c">—</strong><small>אחוז</small></div>
+<div class="metric mini"><span>LDL</span><strong id="homeLDL">—</strong><small>mg/dL</small></div>
+<div class="metric mini"><span>Non-HDL</span><strong id="homeNonHDL">—</strong><small>מחושב</small></div>
+</div>
+</div>
+<div class="card">
+<div class="row between"><h2>חלבון</h2><span id="proteinPct">0%</span></div>
+<div class="progress large"><div id="proteinProgress"></div></div>
+<div class="sub" id="proteinText">0 / 0 גרם</div>
+</div>
+</section>
+<section class="screen" data-screen="metrics">
+<div class="card">
+<h2>הזנת מדדי גוף</h2>
+<div class="form-grid">
+<label>משקל (ק״ג)<input id="inWeight" step="0.1" type="number"/></label>
+<label>היקף מותניים (ס״מ)<input id="inWaist" step="0.1" type="number"/></label>
+<label>היקף ירכיים (ס״מ)<input id="inHip" step="0.1" type="number"/></label>
+<label>אחוז שומן %<input id="inBodyFat" step="0.1" type="number"/></label>
+</div>
+<button class="primary" id="saveMetrics">שמור מדידה להיום</button>
+</div>
+<div class="card">
+<h2>יעדים ומצב</h2>
+<div class="targets" id="targetsTable"></div>
+</div>
+<div class="card">
+<h2>מגמת משקל</h2>
+<canvas height="180" id="weightChart"></canvas>
+</div>
+</section>
+<section class="screen" data-screen="meals">
+<div class="card calorie-card calorie-card-meals">
+<div class="row between"><h2>קלוריות היום</h2><span class="calorie-status" id="mealCalorieStatus">מאזן יומי</span></div>
+<div class="calorie-ring-wrap">
+<div class="ring" id="mealCalorieRing"><span id="mealCalorieRemaining">—</span><small>נותרו</small></div>
+<div class="calstats colorful-stats">
+<div class="calstat target"><span>יעד אכילה</span><strong id="mealCalTarget">—</strong></div>
+<div class="calstat eaten"><span>נאכל</span><strong id="mealCalEaten">—</strong></div>
+<div class="calstat burned"><span>פעילות</span><strong id="mealCalBurned">—</strong></div>
+<div class="calstat net"><span>מאזן נטו</span><strong id="mealCalNet">—</strong></div>
+</div>
+</div>
+</div>
+<div class="card">
+<h2>הוסף ארוחה</h2>
+<label>תיאור הארוחה<textarea id="mealDesc" placeholder="לדוגמה: 2 ביצים, 2 פרוסות לחם, סלט וכף חומוס"></textarea></label>
+<div class="form-grid">
+<label>קלוריות<input id="mealCalories" type="number"/></label>
+<label>חלבון (גרם)<input id="mealProtein" type="number"/></label>
+</div>
+<button class="primary" id="saveMeal">שמור ארוחה</button>
+</div>
+<div class="card"><h2>היום</h2><div id="mealList"></div></div>
+</section>
+<section class="screen" data-screen="activity">
+<div class="card calorie-card activity-calorie-card">
+<div class="row between"><h2>פעילות השבוע</h2><span class="calorie-status" id="activityWeekStatus">יעד שבועי</span></div>
+<div class="calorie-ring-wrap">
+<div class="ring" id="activityRing"><span id="activityRingValue">0</span><small>נותרו ליעד</small></div>
+<div class="calstats colorful-stats">
+<div class="calstat target"><span>יעד שבועי</span><strong id="weekActivityTarget">150</strong><small>דקות</small></div>
+<div class="calstat eaten"><span>בוצע</span><strong id="weekActivityMinutes">0</strong><small>דקות</small></div>
+<div class="calstat burned"><span>קלוריות</span><strong id="weekActivityCalories">0</strong><small>השבוע</small></div>
+<div class="calstat net"><span>אימונים</span><strong id="weekActivityCount">0</strong><small>השבוע</small></div>
+</div>
+</div>
+<div class="activity-progress-text" id="activityProgressText">הזן פעילות כדי להתחיל</div>
+</div>
+<div class="card activity-week-chart-card">
+<div class="row between"><h2>גרף פעילות שבועי</h2><span class="calorie-status ok" id="activityChartStatus">7 ימים</span></div>
+<canvas height="230" id="activityChart"></canvas>
+<div class="week-chart-legend"><span><i class="legend-dot activity-dot"></i> דקות פעילות בכל יום</span><strong id="activityWeekAverage">ממוצע: 0 דק׳</strong></div>
+</div>
+<div class="card activity-entry-card">
+<h2>הוסף פעילות</h2>
+<div class="form-grid">
+<label>סוג<select id="actType"><option>הליכה</option><option>ריצה</option><option>כוח</option><option>כדורסל</option><option>אופניים</option><option>אחר</option></select></label>
+<label>משך (דקות)<input id="actMinutes" type="number"/></label>
+<label>קלוריות שנשרפו<input id="actCalories" type="number"/></label>
+</div>
+<button class="primary" id="saveActivity">שמור פעילות</button>
+</div>
+<div class="card"><h2>פעילות היום</h2><div id="activityList"></div></div>
+<div class="card cumulative-card">
+<h2>מצטבר מתחילת המעקב</h2>
+<div class="calstats colorful-stats cumulative-calstats">
+<div class="calstat net"><span>סה״כ אימונים</span><strong id="totalActivityCount">0</strong></div>
+<div class="calstat eaten"><span>סה״כ דקות</span><strong id="totalActivityMinutes">0</strong></div>
+<div class="calstat burned"><span>סה״כ קלוריות</span><strong id="totalActivityCalories">0</strong></div>
+</div>
+</div>
+</section>
+<section class="screen" data-screen="health">
+<div class="card">
+<h2>מדדי לב, סוכר ושומנים</h2>
+<label>תאריך מדידה<input id="healthDate" type="date"/></label>
+<h3>לחץ דם ודופק</h3>
+<div class="form-grid">
+<label>סיסטולי (mmHg)<input id="h_sbp" type="number"/></label>
+<label>דיאסטולי (mmHg)<input id="h_dbp" type="number"/></label>
+<label>דופק במנוחה<input id="h_restingHr" type="number"/></label>
+</div>
+<h3>שומני דם</h3>
+<div class="form-grid">
+<label>כולסטרול כללי (mg/dL)<input id="h_totalChol" step="0.1" type="number"/></label>
+<label>LDL-C (mg/dL)<input id="h_ldl" step="0.1" type="number"/></label>
+<label>HDL-C (mg/dL)<input id="h_hdl" step="0.1" type="number"/></label>
+<label>טריגליצרידים (mg/dL)<input id="h_triglycerides" step="0.1" type="number"/></label>
+<label>ApoB (אופציונלי)<input id="h_apoB" step="0.1" type="number"/></label>
+<label>Lp(a) (אופציונלי)<input id="h_lpa" step="0.1" type="number"/></label>
+</div>
+<h3>סוכר</h3>
+<div class="form-grid">
+<label>גלוקוז בצום (mg/dL)<input id="h_fastingGlucose" step="0.1" type="number"/></label>
+<label>HbA1c (%)<input id="h_hba1c" step="0.1" type="number"/></label>
+</div>
+<h3>כליה</h3>
+<div class="form-grid">
+<label>קריאטינין (mg/dL)<input id="h_creatinine" step="0.01" type="number"/></label>
+<label>eGFR<input id="h_egfr" step="0.1" type="number"/></label>
+<label>UACR (mg/g)<input id="h_uacr" step="0.1" type="number"/></label>
+</div>
+<h3>גורמי סיכון</h3>
+<div class="checks">
+<label class="check"><input id="h_smoking" type="checkbox"/> עישון נוכחי</label>
+<label class="check"><input id="h_diabetes" type="checkbox"/> סוכרת ידועה</label>
+<label class="check"><input id="h_bpMeds" type="checkbox"/> טיפול תרופתי בלחץ דם</label>
+</div>
+<h3>PREVENT</h3>
+<p class="note">הזן כאן תוצאה שחושבה במחשבון PREVENT הרשמי. האפליקציה אינה מייצרת הערכת PREVENT משוערת.</p>
+<div class="form-grid">
+<label>סיכון 10 שנים (%)<input id="h_prevent10" step="0.1" type="number"/></label>
+<label>סיכון 30 שנים (%)<input id="h_prevent30" step="0.1" type="number"/></label>
+</div>
+<button class="primary" id="saveHealth">שמור נתוני בריאות</button>
+</div>
+<div class="card">
+<h2>מדדים מחושבים ויעדים</h2>
+<div class="targets" id="healthDerived"></div>
+<p class="note">* ערכי גלוקוז/HbA1c אינם אבחנה בפני עצמם; אבחון דורש הקשר רפואי ולעיתים בדיקה חוזרת.</p>
+</div>
+<div class="card">
+<h2>PREVENT — התאמה</h2>
+<strong id="preventEligibility">—</strong>
+<div class="sub" id="preventStored">—</div>
+<p class="note">PREVENT מיועד להערכת סיכון קרדיווסקולרי במניעה ראשונית. יעדי טיפול נקבעים לפי מצב רפואי ורמת סיכון כוללת.</p>
+</div>
+<div class="card"><h2>היסטוריית מדידות</h2><div id="healthHistory"></div></div>
+</section>
+<section class="screen" data-screen="reports">
+<div class="card"><h2>סיכום 7 ימים</h2><div id="weeklySummary"></div></div>
+<div class="card"><h2>התקדמות מול היעדים</h2><div id="reportTargets"></div></div>
+</section>
+<section class="screen" data-screen="settings">
+<div class="card backup-card backup-card-prominent">
+<h2>💾 גיבוי ושחזור נתונים</h2><div class="backup-location">כאן מייבאים ומייצאים את כל נתוני האפליקציה</div>
+<p class="note">מומלץ לייצא גיבוי לפני הסרת האפליקציה, ניקוי נתוני Chrome או מעבר לכתובת אתר אחרת. הנתונים נשמרים מקומית במכשיר.</p>
+<div class="backup-actions">
+<button class="secondary" id="exportBackup">ייצא גיבוי</button>
+<label class="secondary file-button">ייבא גיבוי<input accept="application/json,.json" id="importBackup" type="file"/></label>
+</div>
+<div class="sub" id="backupStatus">נשמר גם עותק גיבוי מקומי אוטומטי.</div>
+</div>
+<div class="card">
+<h2>פרופיל ויעדים</h2>
+<div class="form-grid">
+<label>תאריך לידה<input id="birthDate" type="date"/></label>
+<label>מין<select id="sex"><option value="male">גבר</option><option value="female">אישה</option></select></label>
+<label>גובה (ס״מ)<input id="height" step="0.1" type="number"/></label>
+<label>משקל יעד (ק״ג)<input id="targetWeight" step="0.1" type="number"/></label>
+<label>יעד קלורי יומי<input id="calorieTarget" type="number"/></label>
+<label>יעד חלבון (גרם)<input id="proteinTarget" type="number"/></label>
+<label>יעד פעילות שבועי (דקות)<input id="weeklyActivityTarget" min="30" step="10" type="number"/></label>
+</div>
+<button class="primary" id="saveSettings">שמור הגדרות</button>
+<p class="note">יעדי BMI, יחס מותניים/גובה ויחס מותניים/ירכיים מחושבים לפי ספי סקר מקובלים. גיל משפיע על מדדים מסוימים ועל הערכת סיכון כוללת, אך לא כל סף משתנה לפי גיל.</p>
+</div>
+</section>
+</main>
+<nav class="bottomnav">
+<button aria-label="היום" class="active" data-screen-btn="today"><span aria-hidden="true" class="nav-icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5"></path><path d="M5.5 9.5V20h13V9.5"></path><path d="M9.5 20v-5.5h5V20"></path></svg></span><span class="nav-label">היום</span></button>
+<button aria-label="ארוחות" data-screen-btn="meals"><span aria-hidden="true" class="nav-icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 24 24"><path d="M4.5 3v7"></path><path d="M7 3v7"></path><path d="M9.5 3v7"></path><path d="M7 10v11"></path><path d="M15.5 3c2 1.8 3 4.2 3 7v11"></path><path d="M15.5 3v8"></path><path d="M12 14.5h7"></path></svg></span><span class="nav-label">ארוחות</span></button>
+<button aria-label="פעילות" data-screen-btn="activity"><span aria-hidden="true" class="nav-icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 24 24"><circle cx="16.5" cy="4.8" r="1.9"></circle><path d="M14.5 7.5 12 10l-2.5 2.2"></path><path d="m12 10 3 2 2.5 4"></path><path d="M10.3 12.2 8 17l-3 4"></path><path d="M15 12l-1 7"></path><path d="M9.5 8.3 12 10"></path></svg></span><span class="nav-label">פעילות</span></button>
+<button aria-label="מדדים" data-screen-btn="metrics"><span aria-hidden="true" class="nav-icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 24 24"><path d="M4 16.5 16.5 4a1.5 1.5 0 0 1 2.1 0l1.4 1.4a1.5 1.5 0 0 1 0 2.1L7.5 20a1.5 1.5 0 0 1-2.1 0L4 18.6a1.5 1.5 0 0 1 0-2.1Z"></path><path d="m13 6 5 5"></path><path d="m7.2 11.8 1.7 1.7"></path><path d="m9.8 9.2 1.7 1.7"></path><path d="m4.9 14.1 1.7 1.7"></path></svg></span><span class="nav-label">מדדים</span></button>
+<button aria-label="בריאות" data-screen-btn="health"><span aria-hidden="true" class="nav-icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 24 24"><path d="M12 20s-7-4.7-7-10.1C5 7.1 7 5 9.6 5c1.5 0 2.7.7 3.4 1.8C13.7 5.7 14.9 5 16.4 5 19 5 21 7.1 21 9.9 21 15.3 12 20 12 20Z"></path><path d="M7.3 12h2.7l1.2-2.2 2.2 4.4 1.3-2.2h1.9"></path></svg></span><span class="nav-label">בריאות</span></button>
+<button aria-label="דוחות" data-screen-btn="reports"><span aria-hidden="true" class="nav-icon"><svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" viewbox="0 0 24 24"><path d="M4 20h16"></path><path d="M7 20V11"></path><path d="M12 20V7"></path><path d="M17 20v-5"></path></svg></span><span class="nav-label">דוחות</span></button>
+</nav>
+<div class="install-help-backdrop" hidden="" id="installHelp"><div class="install-help-card"><button aria-label="סגור" class="install-help-close" id="installHelpClose">×</button><h2>התקנת Diet Control</h2><p id="installHelpText">Chrome עדיין לא הציע התקנה אוטומטית.</p><ol><li>ודא שהדף פתוח ב־Chrome בכתובת GitHub Pages שמתחילה ב־https://</li><li>לחץ על ⋮ ב־Chrome.</li><li>בחר <strong>התקנת אפליקציה</strong> או <strong>הוספה למסך הבית</strong>.</li></ol><p class="note">אם האפשרות אינה מופיעה, הסר התקנה קודמת של Diet Control, סגור את Chrome ופתח שוב את כתובת האתר.</p></div></div></div>
 <script src="app.js"></script>
 </body>
 </html>

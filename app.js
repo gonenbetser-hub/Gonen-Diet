@@ -50,29 +50,31 @@ function drawChart(){const c=q('weightChart'),ctx=c.getContext('2d'),d=[...state
 function renderMeals(){const arr=state.meals.filter(x=>x.date===today()).sort((a,b)=>b.time.localeCompare(a.time));q('mealList').innerHTML=arr.length?arr.map(x=>`<div class="listitem"><div><strong>${x.desc||'ארוחה'}</strong><div class="sub">${x.time}</div></div><div>${x.calories} קק״ל<br><span class="sub">${x.protein||0} ג׳ חלבון</span></div></div>`).join(''):'<div class="sub">אין ארוחות להיום</div>'}
 function getLast7Days(){const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i);days.push(d.toISOString().slice(0,10))}return days}
 function renderActivities(){
- const arr=state.activities.filter(x=>x.date===today()).sort((a,b)=>b.time.localeCompare(a.time));
- q('activityList').innerHTML=arr.length?arr.map(x=>`<div class="listitem"><div><strong>${x.type}</strong><div class="sub">${x.minutes||0} דקות</div></div><div>${x.calories||0} קק״ל</div></div>`).join(''):'<div class="sub">אין פעילות להיום</div>';
- const dates=[];for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);dates.push(d.toISOString().slice(0,10))}
- const weekActs=state.activities.filter(x=>dates.includes(x.date));
- const weekMinutes=sum(weekActs,'minutes'),weekCalories=sum(weekActs,'calories'),weekCount=weekActs.length,target=+state.profile.weeklyActivityTarget||150;
- q('weekActivityTarget').textContent=target;q('weekActivityMinutes').textContent=weekMinutes;q('weekActivityCalories').textContent=weekCalories;q('weekActivityCount').textContent=weekCount;
- const pct=target?Math.min(100,weekMinutes/target*100):0,ring=q('activityRing');q('activityRingValue').textContent=weekMinutes;
- const ringColor=weekMinutes>=target?'#16a34a':pct>=75?'#f59e0b':'#2563eb';ring.style.background=`conic-gradient(${ringColor} ${pct}%,#e8eaee ${pct}%)`;
- const status=q('activityWeekStatus');status.className='calorie-status '+(weekMinutes>=target?'ok':pct>=75?'near':'');status.textContent=weekMinutes>=target?'היעד הושג':pct>=75?'קרוב ליעד':'יעד שבועי';
- const remaining=Math.max(0,target-weekMinutes);q('activityProgressText').textContent=weekMinutes>=target?`הגעת ליעד השבועי — ${weekMinutes-target} דקות מעל היעד`:`נותרו ${remaining} דקות להשלמת היעד השבועי`;
- const totalMinutes=sum(state.activities,'minutes'),totalCalories=sum(state.activities,'calories');q('totalActivityCount').textContent=state.activities.length;q('totalActivityMinutes').textContent=totalMinutes;q('totalActivityCalories').textContent=totalCalories;
- q('activityWeekAverage').textContent=`ממוצע: ${Math.round(weekMinutes/7)} דק׳ ליום`;
- drawActivityChart(dates);
+ const todayKey=today();
+ const todayArr=state.activities.filter(x=>x.date===todayKey).sort((a,b)=>b.time.localeCompare(a.time));
+ q('activityList').innerHTML=todayArr.length?todayArr.map(x=>`<div class="listitem"><div><strong>${x.type}</strong><div class="sub">${x.minutes||0} דקות</div></div><div>${x.calories||0} קק״ל</div></div>`).join(''):'<div class="sub">אין פעילות להיום</div>';
+ const days=[]; const now=new Date();
+ for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(now.getDate()-i);days.push(d.toISOString().slice(0,10))}
+ const week=state.activities.filter(x=>days.includes(x.date));
+ const mins=sum(week,'minutes'), calories=sum(week,'calories'), count=week.length;
+ const target=+(state.profile.activityTarget||150); const remain=Math.max(0,target-mins); const pct=target?Math.min(100,mins/target*100):0;
+ q('weekActivityTarget').textContent=target; q('weekActivityMinutes').textContent=mins; q('weekActivityCalories').textContent=calories; q('weekActivityCount').textContent=count; q('activityRingValue').textContent=remain;
+ const ring=q('activityRing'); if(ring)ring.style.background=`conic-gradient(#16a34a ${pct}%,#e8eaee ${pct}%)`;
+ const status=q('activityWeekStatus'); const txt=q('activityProgressText');
+ if(mins>=target){status.textContent='היעד הושג';status.className='calorie-status good';txt.textContent=`מצוין — השלמת ${mins} דקות פעילות השבוע`}
+ else if(mins>=target*.75){status.textContent='קרוב ליעד';status.className='calorie-status warning';txt.textContent=`נותרו עוד ${remain} דקות להשלמת היעד השבועי`}
+ else{status.textContent='בתהליך';status.className='calorie-status ok';txt.textContent=`בוצעו ${mins} מתוך ${target} דקות — נותרו ${remain}`}
+ const totalCount=state.activities.length,totalMinutes=sum(state.activities,'minutes'),totalCalories=sum(state.activities,'calories');q('totalActivityCount').textContent=totalCount;q('totalActivityMinutes').textContent=totalMinutes;q('totalActivityCalories').textContent=totalCalories;
+ const avg=count?Math.round(mins/7):0;q('activityWeekAverage').textContent=`ממוצע: ${avg} דק׳ ליום`;
+ drawActivityChart(days);
 }
-function drawActivityChart(dates){
- const c=q('activityChart');if(!c)return;const ctx=c.getContext('2d'),ratio=window.devicePixelRatio||1;const cssW=Math.max(280,c.clientWidth||320),cssH=210;c.width=cssW*ratio;c.height=cssH*ratio;ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);
- const values=dates.map(d=>sum(state.activities.filter(x=>x.date===d),'minutes')),max=Math.max(30,...values),pad={top:18,right:8,bottom:35,left:8},plotH=cssH-pad.top-pad.bottom,plotW=cssW-pad.left-pad.right,step=plotW/7,barW=Math.min(30,step*.56);
- ctx.font='11px Arial';ctx.textAlign='center';ctx.textBaseline='middle';
- for(let i=0;i<=3;i++){const y=pad.top+plotH*(i/3);ctx.strokeStyle='#eef2f7';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(cssW-pad.right,y);ctx.stroke()}
- const dayNames=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
- dates.forEach((d,i)=>{const v=values[i],x=pad.left+step*i+step/2,h=(v/max)*plotH,y=pad.top+plotH-h;const grad=ctx.createLinearGradient(0,y,0,pad.top+plotH);grad.addColorStop(0,'#16a34a');grad.addColorStop(1,'#86efac');ctx.fillStyle=grad;roundRect(ctx,x-barW/2,y,barW,Math.max(3,h),7);ctx.fill();ctx.fillStyle='#374151';ctx.font='bold 11px Arial';if(v>0)ctx.fillText(String(v),x,Math.max(9,y-8));ctx.fillStyle='#6b7280';ctx.font='11px Arial';const dd=new Date(d+'T12:00:00');ctx.fillText(dayNames[dd.getDay()],x,cssH-18)});
+function drawActivityChart(days){
+ const c=q('activityChart'); if(!c)return; const ctx=c.getContext('2d'); const ratio=window.devicePixelRatio||1; const cssW=Math.max(300,c.clientWidth||320),cssH=230;c.width=cssW*ratio;c.height=cssH*ratio;ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,cssW,cssH);
+ const vals=days.map(d=>sum(state.activities.filter(x=>x.date===d),'minutes')); const max=Math.max(30,...vals); const left=30,right=10,top=18,bottom=42,plotW=cssW-left-right,plotH=cssH-top-bottom,slot=plotW/7,barW=Math.min(34,slot*.58);
+ ctx.strokeStyle='#d1d5db';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(left,top+plotH);ctx.lineTo(cssW-right,top+plotH);ctx.stroke();
+ const heb=['א׳','ב׳','ג׳','ד׳','ה׳','ו׳','ש׳'];
+ vals.forEach((v,i)=>{const h=(v/max)*plotH,x=left+i*slot+(slot-barW)/2,y=top+plotH-h;ctx.fillStyle=v?'#16a34a':'#e5e7eb';ctx.beginPath();ctx.roundRect(x,y,barW,Math.max(3,h),8);ctx.fill();ctx.fillStyle='#374151';ctx.font='12px Arial';ctx.textAlign='center';ctx.fillText(String(v),x+barW/2,Math.max(12,y-6));const dt=new Date(days[i]+'T12:00:00');ctx.fillStyle='#6b7280';ctx.fillText(heb[dt.getDay()],x+barW/2,top+plotH+18);ctx.font='10px Arial';ctx.fillText(days[i].slice(5).replace('-','/'),x+barW/2,top+plotH+32)});
 }
-function roundRect(ctx,x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath()}
 function renderHealth(){const h=latestHealth(),c=calcHealth(h);['sbp','dbp','restingHr','totalChol','ldl','hdl','triglycerides','fastingGlucose','hba1c','egfr','creatinine','uacr','apoB','lpa','prevent10','prevent30'].forEach(k=>{const el=q('h_'+k);if(el)el.value=h[k]??''});q('h_smoking').checked=!!h.smoking;q('h_diabetes').checked=!!h.diabetes;q('h_bpMeds').checked=!!h.bpMeds;
  q('healthDerived').innerHTML=[['לחץ דם',h.sbp&&h.dbp?`${h.sbp}/${h.dbp} mmHg`:'—','<120/80',bpStatus(h.sbp,h.dbp)[0]],['דופק מנוחה',h.restingHr?`${h.restingHr} פעימות/דק׳`:'—','מגמה אישית','למעקב'],['HbA1c',h.hba1c?`${h.hba1c}%`:'—','<5.7% ללא סוכרת',a1cStatus(h.hba1c)[0]],['גלוקוז בצום',h.fastingGlucose?`${h.fastingGlucose} mg/dL`:'—','<100',glucoseStatus(h.fastingGlucose)[0]],['LDL-C',h.ldl?`${h.ldl} mg/dL`:'—','תלוי רמת סיכון',ldlStatus(h.ldl)[0]],['Non-HDL-C',c.nonHdl!=null?`${Math.round(c.nonHdl)} mg/dL`:'—','תלוי רמת סיכון','מחושב אוטומטית'],['טריגליצרידים',h.triglycerides?`${h.triglycerides} mg/dL`:'—','<150',tgStatus(h.triglycerides)[0]],['TG/HDL',c.tgHdl!=null?c.tgHdl.toFixed(2):'—','מדד משלים','ללא סף אבחנתי יחיד'],['Pulse Pressure',c.pulsePressure!=null?`${Math.round(c.pulsePressure)} mmHg`:'—','מגמה','מחושב'],['MAP',c.map!=null?`${Math.round(c.map)} mmHg`:'—','מגמה','מחושב'],['eGFR',h.egfr?`${h.egfr} mL/min/1.73m²`:'—','פענוח רפואי','כליה'],['UACR',h.uacr?`${h.uacr} mg/g`:'—','פענוח רפואי','כליה'],['ApoB',h.apoB?`${h.apoB} mg/dL`:'—','תלוי סיכון','מתקדם'],['Lp(a)',h.lpa?`${h.lpa} mg/dL`:'—','לפי מעבדה/הנחיה','מתקדם']].map(r=>`<div class="target"><div><strong>${r[0]}</strong><div class="sub">נוכחי: ${r[1]}</div></div><div style="text-align:left"><span class="badge">יעד ${r[2]}</span><div class="sub">${r[3]}</div></div></div>`).join('');
  const a=age();let eligibility='נדרשים גיל ונתוני בריאות';if(a!=null){if(a>=30&&a<=79)eligibility='מתאים עקרונית לחישוב PREVENT ל־10 שנים, בכפוף לקריטריונים הקליניים';else eligibility='מחוץ לטווח הגיל המקובל של PREVENT ל־10 שנים';if(a>=30&&a<=59)eligibility+='; ניתן גם לחשב סיכון ל־30 שנה'}q('preventEligibility').textContent=eligibility;q('preventStored').textContent=`10 שנים: ${h.prevent10?`${h.prevent10}%`:'—'} | 30 שנים: ${h.prevent30?`${h.prevent30}%`:'—'}`;
@@ -97,7 +99,8 @@ function updateInstallButton(){if(!installBtn)return;installBtn.classList.remove
 window.addEventListener('dietinstallready',()=>{deferredInstallPrompt=window.__dietInstallPrompt;updateInstallButton()});
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e;window.__dietInstallPrompt=e;updateInstallButton()});
 window.addEventListener('appinstalled',()=>{deferredInstallPrompt=null;window.__dietInstallPrompt=null;updateInstallButton()});
-if(installBtn)installBtn.onclick=async()=>{if(isStandalone()){return}deferredInstallPrompt=deferredInstallPrompt||window.__dietInstallPrompt;if(deferredInstallPrompt){try{deferredInstallPrompt.prompt();const choice=await deferredInstallPrompt.userChoice;if(choice&&choice.outcome==='accepted'){installBtn.textContent='מתקין…'}deferredInstallPrompt=null;window.__dietInstallPrompt=null;updateInstallButton()}catch(err){console.error('Install prompt failed',err);alert('Chrome לא הצליח לפתוח את חלון ההתקנה. נסה לרענן את הדף ולאחר מכן לחץ שוב על התקנה.')}return}alert('Chrome עדיין לא סימן את האתר כניתן להתקנה. ודא שאתה פותח את כתובת GitHub Pages ב-HTTPS ולא תצוגה מקומית/קובץ ZIP. לאחר רענון מלא של הדף נסה שוב; אם Chrome עדיין לא מציע התקנה, בחר בתפריט ⋮ > התקנת אפליקציה.');};
+const installHelp=q('installHelp'),installHelpClose=q('installHelpClose');if(installHelpClose)installHelpClose.onclick=()=>installHelp.hidden=true;if(installHelp)installHelp.onclick=e=>{if(e.target===installHelp)installHelp.hidden=true};
+if(installBtn)installBtn.onclick=async()=>{if(isStandalone())return;deferredInstallPrompt=deferredInstallPrompt||window.__dietInstallPrompt;if(deferredInstallPrompt){try{deferredInstallPrompt.prompt();const choice=await deferredInstallPrompt.userChoice;deferredInstallPrompt=null;window.__dietInstallPrompt=null;if(choice&&choice.outcome==='accepted'){installBtn.textContent='מתקין…'}updateInstallButton()}catch(err){console.error('Install prompt failed',err);if(installHelp)installHelp.hidden=false}return}if(installHelp)installHelp.hidden=false;};
 if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});renderAll();updateInstallButton();const initialScreen=(location.hash||'#today').replace('#','');go(validScreen(initialScreen)?initialScreen:'today',false);window.addEventListener('hashchange',()=>{const s=(location.hash||'#today').replace('#','');if(validScreen(s))go(s,false)});
 
 window.addEventListener('resize',()=>{if(document.querySelector('[data-screen="activity"]')?.classList.contains('active'))renderActivities()});window.addEventListener('pageshow',updateInstallButton);
