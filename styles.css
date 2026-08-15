@@ -180,3 +180,7 @@ main{padding-bottom:164px}
 .backup-actions{grid-template-columns:repeat(3,1fr)}
 #shareBackup{background:#0f766e;color:#fff;border-color:#0f766e}
 @media(max-width:620px){.backup-actions{grid-template-columns:1fr}}
+
+
+/* v3.8 – editable meal/activity rows */
+.editable-listitem{align-items:center}.list-main{min-width:0;flex:1}.list-actions{display:flex;align-items:center;gap:12px;text-align:left}.list-values{white-space:nowrap}.delete-entry{width:44px;height:44px;display:grid;place-items:center;border:1px solid #fecaca;background:#fff1f2;color:#b91c1c;border-radius:13px;font-size:20px;cursor:pointer;padding:0}.delete-entry:active{transform:scale(.96);background:#ffe4e6}@media(max-width:480px){.list-actions{gap:8px}.delete-entry{width:42px;height:42px;font-size:19px}}

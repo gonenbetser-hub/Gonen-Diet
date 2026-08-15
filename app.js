@@ -1,7 +1,8 @@
 const LS='weightHealthPWA_v1';
 const LS_BACKUP='weightHealthPWA_v1_backup';
 const LS_PREVIOUS='weightHealthPWA_v1_previous';
-const today=()=>new Date().toISOString().slice(0,10);
+const dateKeyLocal=(d=new Date())=>{const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`};
+const today=()=>dateKeyLocal(new Date());
 const defaultState={profile:{birthDate:'',sex:'male',height:192,targetWeight:92,calorieTarget:1850,proteinTarget:150,weeklyActivityTarget:150},metrics:[],meals:[],activities:[],health:[]};
 function safeParse(raw){try{return raw?JSON.parse(raw):null}catch(e){return null}}
 function hasUserData(s){return !!(s&&((s.metrics&&s.metrics.length)||(s.meals&&s.meals.length)||(s.activities&&s.activities.length)||(s.health&&s.health.length)||(s.profile&&s.profile.birthDate)))}
@@ -13,6 +14,8 @@ function loadState(){
 let state=loadState();
 state.profile={...defaultState.profile,...(state.profile||{})};
 state.metrics=state.metrics||[];state.meals=state.meals||[];state.activities=state.activities||[];state.health=state.health||[];
+state.meals=state.meals.map((x,i)=>({...x,id:x.id??`meal-${x.date||'x'}-${x.time||'x'}-${i}`}));
+state.activities=state.activities.map((x,i)=>({...x,id:x.id??`activity-${x.date||'x'}-${x.time||'x'}-${i}`}));
 function save(){const previous=localStorage.getItem(LS);if(previous)localStorage.setItem(LS_PREVIOUS,previous);const raw=JSON.stringify(state);localStorage.setItem(LS,raw);localStorage.setItem(LS_BACKUP,raw);renderAll()}
 function age(){if(!state.profile.birthDate)return null;const b=new Date(state.profile.birthDate),n=new Date();let a=n.getFullYear()-b.getFullYear();if(n<new Date(n.getFullYear(),b.getMonth(),b.getDate()))a--;return a}
 function latestMetric(){return [...state.metrics].sort((a,b)=>a.date.localeCompare(b.date)).at(-1)||{}}
@@ -47,14 +50,16 @@ function metric(id,val,st){q(id).textContent=val??'—';q(id+'Status').textConte
 function renderMetrics(){const m=latestMetric();q('inWeight').value=m.weight||'';q('inWaist').value=m.waist||'';q('inHip').value=m.hip||'';q('inBodyFat').value=m.bodyFat||'';const c=calc(m);q('targetsTable').innerHTML=targetRows(c,m);drawChart()}
 function targetRows(c,m){const rows=[['BMI',c.bmi?.toFixed(1)||'—','18.5–24.9',bmiStatus(c.bmi)[0]],['מותניים/גובה',c.whtr?.toFixed(2)||'—','0.40–0.49',whtrStatus(c.whtr)[0]],['מותניים/ירכיים',c.whr?.toFixed(2)||'—',state.profile.sex==='male'?'<0.90':'<0.85',whrStatus(c.whr)[0]],['היקף מותניים',m.waist?m.waist+' ס״מ':'—',state.profile.sex==='male'?'<94 ס״מ':'<80 ס״מ',waistStatus(+m.waist)[0]],['אחוז שומן',m.bodyFat?m.bodyFat+'%':'—','מותאם גיל/מין','למעקב']];return rows.map(r=>`<div class="target"><div><strong>${r[0]}</strong><div class="sub">נוכחי: ${r[1]}</div></div><div style="text-align:left"><span class="badge">יעד ${r[2]}</span><div class="sub">${r[3]}</div></div></div>`).join('')}
 function drawChart(){const c=q('weightChart'),ctx=c.getContext('2d'),d=[...state.metrics].sort((a,b)=>a.date.localeCompare(b.date)).slice(-30);const w=c.width=c.clientWidth*devicePixelRatio,h=c.height=180*devicePixelRatio;ctx.clearRect(0,0,w,h);if(d.length<2){ctx.fillStyle='#6b7280';ctx.font=`${14*devicePixelRatio}px Arial`;ctx.fillText('נדרשות לפחות שתי שקילות',20*devicePixelRatio,90*devicePixelRatio);return}const vals=d.map(x=>+x.weight).filter(Boolean),min=Math.min(...vals)-1,max=Math.max(...vals)+1;ctx.strokeStyle='#111827';ctx.lineWidth=2*devicePixelRatio;ctx.beginPath();d.forEach((x,i)=>{const xx=(i/(d.length-1))*w,yy=h-((x.weight-min)/(max-min))*h;(i?ctx.lineTo(xx,yy):ctx.moveTo(xx,yy))});ctx.stroke()}
-function renderMeals(){const arr=state.meals.filter(x=>x.date===today()).sort((a,b)=>b.time.localeCompare(a.time));q('mealList').innerHTML=arr.length?arr.map(x=>`<div class="listitem"><div><strong>${x.desc||'ארוחה'}</strong><div class="sub">${x.time}</div></div><div>${x.calories} קק״ל<br><span class="sub">${x.protein||0} ג׳ חלבון</span></div></div>`).join(''):'<div class="sub">אין ארוחות להיום</div>'}
-function getLast7Days(){const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i);days.push(d.toISOString().slice(0,10))}return days}
+function renderMeals(){
+ const arr=state.meals.filter(x=>x.date===today()).sort((a,b)=>(b.time||'').localeCompare(a.time||''));
+ q('mealList').innerHTML=arr.length?arr.map(x=>`<div class="listitem editable-listitem"><div class="list-main"><strong>${escapeHtml(x.desc||'ארוחה')}</strong><div class="sub">${escapeHtml(x.time||'')}</div></div><div class="list-actions"><div class="list-values">${+x.calories||0} קק״ל<br><span class="sub">${+x.protein||0} ג׳ חלבון</span></div><button type="button" class="delete-entry" data-delete-meal="${escapeAttr(String(x.id))}" aria-label="מחק ארוחה" title="מחק ארוחה">🗑️</button></div></div>`).join(''):'<div class="sub">אין ארוחות להיום</div>';
+}
+function getLast7Days(){const days=[];for(let i=6;i>=0;i--){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i);days.push(dateKeyLocal(d))}return days}
 function renderActivities(){
  const todayKey=today();
  const todayArr=state.activities.filter(x=>x.date===todayKey).sort((a,b)=>b.time.localeCompare(a.time));
- q('activityList').innerHTML=todayArr.length?todayArr.map(x=>`<div class="listitem"><div><strong>${x.type}</strong><div class="sub">${x.minutes||0} דקות</div></div><div>${x.calories||0} קק״ל</div></div>`).join(''):'<div class="sub">אין פעילות להיום</div>';
- const days=[]; const now=new Date();
- for(let i=6;i>=0;i--){const d=new Date(now);d.setDate(now.getDate()-i);days.push(d.toISOString().slice(0,10))}
+ q('activityList').innerHTML=todayArr.length?todayArr.map(x=>`<div class="listitem editable-listitem"><div class="list-main"><strong>${escapeHtml(x.type||'פעילות')}</strong><div class="sub">${+x.minutes||0} דקות · ${escapeHtml(x.time||'')}</div></div><div class="list-actions"><div class="list-values">${+x.calories||0} קק״ל</div><button type="button" class="delete-entry" data-delete-activity="${escapeAttr(String(x.id))}" aria-label="מחק פעילות" title="מחק פעילות">🗑️</button></div></div>`).join(''):'<div class="sub">אין פעילות להיום</div>';
+ const days=getLast7Days();
  const week=state.activities.filter(x=>days.includes(x.date));
  const mins=sum(week,'minutes'), calories=sum(week,'calories'), count=week.length;
  const target=+(state.profile.activityTarget||150); const remain=Math.max(0,target-mins); const pct=target?Math.min(100,mins/target*100):0;
@@ -87,11 +92,11 @@ function go(name,updateHash=true){if(!validScreen(name))name='today';document.qu
 document.querySelectorAll('[data-screen-btn]').forEach(b=>b.onclick=()=>go(b.dataset.screenBtn));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));q('settingsBtn').onclick=()=>go('settings');
 q('saveSettings').onclick=()=>{state.profile={birthDate:q('birthDate').value,sex:q('sex').value,height:+q('height').value,targetWeight:+q('targetWeight').value,calorieTarget:+q('calorieTarget').value,proteinTarget:+q('proteinTarget').value,weeklyActivityTarget:+q('weeklyActivityTarget').value||150};save();go('today')};
 q('saveMetrics').onclick=()=>{const rec={date:today(),weight:+q('inWeight').value,waist:+q('inWaist').value,hip:+q('inHip').value,bodyFat:+q('inBodyFat').value};state.metrics=state.metrics.filter(x=>x.date!==rec.date);state.metrics.push(rec);save();go('today')};
-q('saveMeal').onclick=()=>{state.meals.push({id:Date.now(),date:today(),time:new Date().toTimeString().slice(0,5),desc:q('mealDesc').value,calories:+q('mealCalories').value||0,protein:+q('mealProtein').value||0});q('mealDesc').value='';q('mealCalories').value='';q('mealProtein').value='';save()};
-q('saveActivity').onclick=()=>{state.activities.push({id:Date.now(),date:today(),time:new Date().toTimeString().slice(0,5),type:q('actType').value,minutes:+q('actMinutes').value||0,calories:+q('actCalories').value||0});q('actMinutes').value='';q('actCalories').value='';save()};
+q('saveMeal').onclick=()=>{state.meals.push({id:`meal-${Date.now()}`,date:today(),time:new Date().toTimeString().slice(0,5),desc:q('mealDesc').value,calories:+q('mealCalories').value||0,protein:+q('mealProtein').value||0});q('mealDesc').value='';q('mealCalories').value='';q('mealProtein').value='';save();renderMeals();renderToday()};
+q('saveActivity').onclick=()=>{const rec={id:`activity-${Date.now()}`,date:today(),time:new Date().toTimeString().slice(0,5),type:q('actType').value,minutes:+q('actMinutes').value||0,calories:+q('actCalories').value||0};state.activities.push(rec);q('actMinutes').value='';q('actCalories').value='';save();renderToday();renderActivities();requestAnimationFrame(()=>renderActivities())};
 q('saveHealth').onclick=()=>{const keys=['sbp','dbp','restingHr','totalChol','ldl','hdl','triglycerides','fastingGlucose','hba1c','egfr','creatinine','uacr','apoB','lpa','prevent10','prevent30'];const rec={date:q('healthDate').value||today()};keys.forEach(k=>rec[k]=+q('h_'+k).value||'');rec.smoking=q('h_smoking').checked;rec.diabetes=q('h_diabetes').checked;rec.bpMeds=q('h_bpMeds').checked;state.health=state.health.filter(x=>x.date!==rec.date);state.health.push(rec);save()};
 function buildBackupFile(){
-  const payload={app:'Diet Control',version:'3.6',schema:1,exportedAt:new Date().toISOString(),data:state};
+  const payload={app:'Diet Control',version:'3.8',schema:1,exportedAt:new Date().toISOString(),data:state};
   const text=JSON.stringify(payload,null,2);
   const filename=`Diet_Control_Backup_${today()}.json`;
   return {payload,text,filename,file:new File([text],[filename].join(''),{type:'application/json;charset=utf-8'})};
@@ -146,7 +151,16 @@ q('shareBackup').onclick=async()=>{
     else {console.error('Backup share failed',err);q('backupStatus').textContent='לא ניתן לשתף את קובץ הגיבוי בדפדפן זה.';}
   }
 };
-q('importBackup').onchange=async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const text=await file.text();const parsed=JSON.parse(text);const incoming=parsed.data||parsed;if(!incoming||typeof incoming!=='object')throw new Error('invalid');if(!confirm('לייבא את הגיבוי ולהחליף את הנתונים הנוכחיים באפליקציה?')){e.target.value='';return}state=incoming;state.profile={...defaultState.profile,...(state.profile||{})};state.metrics=state.metrics||[];state.meals=state.meals||[];state.activities=state.activities||[];state.health=state.health||[];save();q('backupStatus').textContent='הגיבוי יובא בהצלחה.';e.target.value=''}catch(err){q('backupStatus').textContent='לא ניתן לקרוא את קובץ הגיבוי.'}};
+q('importBackup').onchange=async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const text=await file.text();const parsed=JSON.parse(text);const incoming=parsed.data||parsed;if(!incoming||typeof incoming!=='object')throw new Error('invalid');if(!confirm('לייבא את הגיבוי ולהחליף את הנתונים הנוכחיים באפליקציה?')){e.target.value='';return}state=incoming;state.profile={...defaultState.profile,...(state.profile||{})};state.metrics=state.metrics||[];state.meals=state.meals||[];state.activities=state.activities||[];state.health=state.health||[];
+state.meals=state.meals.map((x,i)=>({...x,id:x.id??`meal-${x.date||'x'}-${x.time||'x'}-${i}`}));
+state.activities=state.activities.map((x,i)=>({...x,id:x.id??`activity-${x.date||'x'}-${x.time||'x'}-${i}`}));save();q('backupStatus').textContent='הגיבוי יובא בהצלחה.';e.target.value=''}catch(err){q('backupStatus').textContent='לא ניתן לקרוא את קובץ הגיבוי.'}};
+
+function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
+function escapeAttr(v){return escapeHtml(v)}
+function deleteMeal(id){const item=state.meals.find(x=>String(x.id)===String(id));if(!item)return;if(!confirm(`למחוק את הארוחה "${item.desc||'ארוחה'}"?`))return;state.meals=state.meals.filter(x=>String(x.id)!==String(id));save();renderMeals();renderToday()}
+function deleteActivity(id){const item=state.activities.find(x=>String(x.id)===String(id));if(!item)return;if(!confirm(`למחוק את הפעילות "${item.type||'פעילות'}"?`))return;state.activities=state.activities.filter(x=>String(x.id)!==String(id));save();renderToday();renderActivities();requestAnimationFrame(()=>renderActivities())}
+document.addEventListener('click',e=>{const mealBtn=e.target.closest('[data-delete-meal]');if(mealBtn){deleteMeal(mealBtn.dataset.deleteMeal);return}const activityBtn=e.target.closest('[data-delete-activity]');if(activityBtn){deleteActivity(activityBtn.dataset.deleteActivity)}});
+
 q('healthDate').value=today();
 let deferredInstallPrompt=window.__dietInstallPrompt||null;const installBtn=q('installBtn');
 function isStandalone(){return window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true}
