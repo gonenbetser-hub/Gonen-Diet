@@ -125,6 +125,27 @@
     </section>
 
     <section class="screen" data-screen="activity">
+      <div class="card activity-dashboard">
+        <div class="row between"><div><span class="label">פעילות השבוע</span><h2>סיכום 7 ימים</h2></div><span class="activity-week-badge" id="activityWeekBadge">—</span></div>
+        <div class="activity-stats">
+          <div class="activity-stat sessions"><span>אימונים</span><strong id="weekActivityCount">0</strong><small>השבוע</small></div>
+          <div class="activity-stat minutes"><span>דקות</span><strong id="weekActivityMinutes">0</strong><small>השבוע</small></div>
+          <div class="activity-stat calories"><span>קלוריות</span><strong id="weekActivityCalories">0</strong><small>השבוע</small></div>
+          <div class="activity-stat average"><span>ממוצע</span><strong id="weekActivityAverage">0</strong><small>דק׳ לאימון</small></div>
+        </div>
+        <div class="activity-chart-wrap">
+          <div class="row between activity-chart-head"><strong>דקות פעילות לפי יום</strong><span class="sub">7 ימים אחרונים</span></div>
+          <canvas id="activityChart" height="210"></canvas>
+        </div>
+      </div>
+      <div class="card cumulative-card">
+        <h2>מצטבר מתחילת המעקב</h2>
+        <div class="activity-stats cumulative">
+          <div class="activity-stat sessions"><span>סה״כ אימונים</span><strong id="totalActivityCount">0</strong></div>
+          <div class="activity-stat minutes"><span>סה״כ דקות</span><strong id="totalActivityMinutes">0</strong></div>
+          <div class="activity-stat calories"><span>סה״כ קלוריות</span><strong id="totalActivityCalories">0</strong></div>
+        </div>
+      </div>
       <div class="card">
         <h2>הוסף פעילות</h2>
         <div class="form-grid">
@@ -214,6 +235,15 @@
         </div>
         <button class="primary" id="saveSettings">שמור הגדרות</button>
         <p class="note">יעדי BMI, יחס מותניים/גובה ויחס מותניים/ירכיים מחושבים לפי ספי סקר מקובלים. גיל משפיע על מדדים מסוימים ועל הערכת סיכון כוללת, אך לא כל סף משתנה לפי גיל.</p>
+      </div>
+      <div class="card backup-card">
+        <h2>גיבוי ושחזור נתונים</h2>
+        <p class="note">מומלץ לייצא גיבוי לפני הסרת האפליקציה, ניקוי נתוני Chrome או מעבר לכתובת אתר אחרת. הנתונים נשמרים מקומית במכשיר.</p>
+        <div class="backup-actions">
+          <button class="secondary" id="exportBackup">ייצא גיבוי</button>
+          <label class="secondary file-button">ייבא גיבוי<input id="importBackup" type="file" accept="application/json,.json"></label>
+        </div>
+        <div class="sub" id="backupStatus">נשמר גם עותק גיבוי מקומי אוטומטי.</div>
       </div>
     </section>
   </main>

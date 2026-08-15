@@ -137,3 +137,16 @@ main{padding-bottom:164px}
 .calorie-status{font-size:13px;font-weight:700;padding:7px 10px;border-radius:999px;background:#eff6ff;color:#1d4ed8;}
 .calorie-status.near{background:#fff7ed;color:#c2410c}.calorie-status.over{background:#fef2f2;color:#b91c1c}.calorie-status.ok{background:#eff6ff;color:#1d4ed8}
 @media(max-width:480px){.calorie-card .calorie-ring-wrap{gap:14px}.calstat{padding:9px 8px;min-height:64px}.calstat strong{font-size:18px}.calstat span{font-size:12px}.calorie-status{font-size:11px;padding:6px 8px}}
+
+
+/* v3.2 – weekly activity dashboard, cumulative totals, backup */
+.activity-dashboard{background:linear-gradient(145deg,#ffffff 0%,#f3fff6 58%,#effaf5 100%);border:1px solid #dcfce7;box-shadow:0 8px 24px rgba(22,163,74,.08)}
+.activity-week-badge{background:#dcfce7;color:#15803d;font-weight:800;padding:8px 12px;border-radius:999px;font-size:13px}
+.activity-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}
+.activity-stat{padding:12px 10px;border-radius:15px;border:1px solid transparent;text-align:center;min-width:0}
+.activity-stat span{display:block;font-size:12px;font-weight:700;margin-bottom:5px}.activity-stat strong{display:block;font-size:24px;line-height:1.05}.activity-stat small{display:block;font-size:10px;margin-top:5px;color:#6b7280}
+.activity-stat.sessions{background:#eff6ff;border-color:#dbeafe;color:#1d4ed8}.activity-stat.minutes{background:#f0fdf4;border-color:#dcfce7;color:#15803d}.activity-stat.calories{background:#fff7ed;border-color:#ffedd5;color:#c2410c}.activity-stat.average{background:#faf5ff;border-color:#f3e8ff;color:#7e22ce}
+.activity-chart-wrap{margin-top:18px;padding-top:14px;border-top:1px solid #e5e7eb}.activity-chart-head{margin-bottom:6px}.activity-chart-wrap canvas{width:100%;height:210px;display:block}
+.cumulative-card{border:1px solid #e5e7eb}.activity-stats.cumulative{grid-template-columns:repeat(3,1fr)}
+.backup-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}.secondary{border:1px solid #d1d5db;background:#fff;color:#111827;border-radius:14px;padding:13px;font-size:16px;font-weight:700;text-align:center;cursor:pointer}.file-button{display:flex;align-items:center;justify-content:center;color:#111827}.file-button input{display:none}
+@media(max-width:480px){.activity-stats{grid-template-columns:1fr 1fr}.activity-stat strong{font-size:22px}.activity-stats.cumulative{grid-template-columns:1fr 1fr 1fr;gap:6px}.activity-stats.cumulative .activity-stat{padding:10px 5px}.activity-stats.cumulative .activity-stat strong{font-size:18px}.activity-stats.cumulative .activity-stat span{font-size:10px}.backup-actions{grid-template-columns:1fr}.activity-chart-wrap canvas{height:200px}}
