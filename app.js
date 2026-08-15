@@ -54,12 +54,37 @@ q('saveMeal').onclick=()=>{state.meals.push({id:crypto.randomUUID?crypto.randomU
 q('saveActivity').onclick=()=>{state.activities.push({id:crypto.randomUUID?crypto.randomUUID():Date.now()+'a',date:localDate(),time:nowTime(),type:q('actType').value,minutes:+q('actMinutes').value||0,calories:+q('actCalories').value||0});q('actMinutes').value='';q('actCalories').value='';save();go('activity');toast('הפעילות נשמרה')};
 q('saveMetrics').onclick=()=>{state.metrics.push({id:crypto.randomUUID?crypto.randomUUID():Date.now()+'x',date:localDate(),weight:+q('inWeight').value||0,waist:+q('inWaist').value||0,hip:+q('inHip').value||0,bodyFat:+q('inBodyFat').value||0});save();go('metrics');toast('המדידה נשמרה')};
 q('saveHealth').onclick=()=>{const rec={id:crypto.randomUUID?crypto.randomUUID():Date.now()+'h',date:q('healthDate').value||localDate()};['sbp','dbp','restingHr','totalChol','ldl','hdl','triglycerides','fastingGlucose','hba1c','creatinine','egfr','uacr','apoB','lpa','prevent10','prevent30'].forEach(k=>rec[k]=+q('h_'+k).value||'');rec.smoking=q('h_smoking').checked;rec.diabetes=q('h_diabetes').checked;rec.bpMeds=q('h_bpMeds').checked;state.health.push(rec);save();go('health');toast('נתוני הבריאות נשמרו')};
-function backupPayload(){return{app:'Diet Control',version:'5.0',exportedAt:new Date().toISOString(),data:state}}
+function backupPayload(){return{app:'Diet Control',version:'5.1',exportedAt:new Date().toISOString(),data:state}}
 function downloadBackup(){const blob=new Blob([JSON.stringify(backupPayload(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`Diet_Control_Backup_${localDate()}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},3000);q('backupStatus').textContent=`יוצא גיבוי בתאריך ${fmtDate(localDate())}`;toast('קובץ הגיבוי נוצר')}
 q('exportBtn').onclick=downloadBackup;
 q('shareBtn').onclick=async()=>{const file=new File([JSON.stringify(backupPayload(),null,2)],`Diet_Control_Backup_${localDate()}.json`,{type:'application/json'});if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'Diet Control Backup'});q('backupStatus').textContent='הגיבוי שותף / נשמר'}else downloadBackup()};
 q('importFile').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const obj=JSON.parse(await f.text()),data=obj.data||obj;state=normalize(data);ensureIds();save();q('backupStatus').textContent=`יובא גיבוי: ${f.name}`;toast('הגיבוי יובא בהצלחה');go('today')}catch{alert('קובץ הגיבוי אינו תקין')}finally{e.target.value=''}};
-let deferredPrompt=null;const installBtn=q('installBtn');function standalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}function updateInstall(){installBtn.hidden=standalone()}window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;updateInstall()});window.addEventListener('appinstalled',()=>{deferredPrompt=null;updateInstall();toast('האפליקציה הותקנה')});installBtn.onclick=async()=>{if(!deferredPrompt){alert('Chrome עדיין לא סימן את האתר כניתן להתקנה. פתח את תפריט ⋮ של Chrome ובחר התקנת אפליקציה / הוספה למסך הבית. אם האפשרות אינה מופיעה, רענן את הדף ובדוק שהאתר נפתח ב-HTTPS.');return}deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;updateInstall()};updateInstall();
+let deferredPrompt=window.__dietControlInstallPrompt||null;
+const installBtn=q('installBtn');
+function standalone(){return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}
+function updateInstall(){
+  if(!installBtn)return;
+  deferredPrompt=deferredPrompt||window.__dietControlInstallPrompt||null;
+  installBtn.hidden=standalone()||!deferredPrompt;
+}
+function captureInstallPrompt(e){
+  e.preventDefault();
+  deferredPrompt=e;
+  window.__dietControlInstallPrompt=e;
+  updateInstall();
+}
+window.addEventListener('beforeinstallprompt',captureInstallPrompt);
+window.addEventListener('dietcontrol-install-ready',()=>{deferredPrompt=window.__dietControlInstallPrompt||deferredPrompt;updateInstall()});
+window.addEventListener('appinstalled',()=>{deferredPrompt=null;window.__dietControlInstallPrompt=null;updateInstall();toast('האפליקציה הותקנה')});
+installBtn.onclick=async()=>{
+  deferredPrompt=deferredPrompt||window.__dietControlInstallPrompt||null;
+  if(!deferredPrompt){updateInstall();return}
+  deferredPrompt.prompt();
+  const choice=await deferredPrompt.userChoice.catch(()=>null);
+  if(choice&&choice.outcome==='accepted')toast('ההתקנה אושרה');
+  deferredPrompt=null;window.__dietControlInstallPrompt=null;updateInstall();
+};
+updateInstall();
 q('healthDate').value=localDate();
-if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js?v=5.0').catch(()=>{});
+if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 renderAll();const initial=(location.hash||'#today').slice(1);go(validScreen(initial)?initial:'today',false);window.addEventListener('hashchange',()=>go((location.hash||'#today').slice(1),false));
