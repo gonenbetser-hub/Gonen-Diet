@@ -16,10 +16,10 @@
 <div id="app">
   <header class="topbar">
     <div>
-      <div class="eyebrow">מרכז בריאות מטבולית ומשקל</div>
+      <div class="eyebrow">מרכז בריאות מטבולית ומשקל <span class="version-badge">v3.3</span></div>
       <h1 id="pageTitle">היום</h1>
     </div>
-    <button class="icon-btn" id="settingsBtn" aria-label="הגדרות">⚙️</button>
+    <div class="top-actions"><button class="install-btn" id="installBtn" type="button">⬇ התקנה</button><button class="icon-btn" id="settingsBtn" aria-label="הגדרות">⚙️</button></div>
   </header>
 
   <main>
@@ -125,16 +125,20 @@
     </section>
 
     <section class="screen" data-screen="activity">
-      <div class="card activity-dashboard">
-        <div class="row between"><div><span class="label">פעילות השבוע</span><h2>סיכום 7 ימים</h2></div><span class="activity-week-badge" id="activityWeekBadge">—</span></div>
-        <div class="activity-stats">
-          <div class="activity-stat sessions"><span>אימונים</span><strong id="weekActivityCount">0</strong><small>השבוע</small></div>
-          <div class="activity-stat minutes"><span>דקות</span><strong id="weekActivityMinutes">0</strong><small>השבוע</small></div>
-          <div class="activity-stat calories"><span>קלוריות</span><strong id="weekActivityCalories">0</strong><small>השבוע</small></div>
-          <div class="activity-stat average"><span>ממוצע</span><strong id="weekActivityAverage">0</strong><small>דק׳ לאימון</small></div>
+      <div class="card activity-dashboard activity-summary-card">
+        <div class="row between"><h2>פעילות השבוע</h2><span class="activity-week-badge" id="activityWeekBadge">—</span></div>
+        <div class="activity-ring-wrap">
+          <div class="activity-ring" id="activityRing"><span id="activityRingValue">0</span><small>דקות מתוך היעד</small></div>
+          <div class="activity-summary-stats">
+            <div class="activity-summary-item target"><span>יעד שבועי</span><strong id="weekActivityTarget">150</strong><small>דקות</small></div>
+            <div class="activity-summary-item done"><span>בוצע</span><strong id="weekActivityMinutes">0</strong><small>דקות</small></div>
+            <div class="activity-summary-item calories"><span>קלוריות</span><strong id="weekActivityCalories">0</strong><small>השבוע</small></div>
+            <div class="activity-summary-item sessions"><span>אימונים</span><strong id="weekActivityCount">0</strong><small>השבוע</small></div>
+          </div>
         </div>
-        <div class="activity-chart-wrap">
-          <div class="row between activity-chart-head"><strong>דקות פעילות לפי יום</strong><span class="sub">7 ימים אחרונים</span></div>
+        <div class="activity-progress-text" id="activityProgressText">הזן פעילות כדי להתחיל</div>
+        <div class="activity-chart-wrap activity-chart-card">
+          <div class="row between activity-chart-head"><strong>פעילות ב־7 הימים האחרונים</strong><span class="sub">דקות לכל יום</span></div>
           <canvas id="activityChart" height="210"></canvas>
         </div>
       </div>
@@ -223,6 +227,15 @@
     </section>
 
     <section class="screen" data-screen="settings">
+      <div class="card backup-card backup-card-prominent">
+        <h2>💾 גיבוי ושחזור נתונים</h2><div class="backup-location">כאן מייבאים ומייצאים את כל נתוני האפליקציה</div>
+        <p class="note">מומלץ לייצא גיבוי לפני הסרת האפליקציה, ניקוי נתוני Chrome או מעבר לכתובת אתר אחרת. הנתונים נשמרים מקומית במכשיר.</p>
+        <div class="backup-actions">
+          <button class="secondary" id="exportBackup">ייצא גיבוי</button>
+          <label class="secondary file-button">ייבא גיבוי<input id="importBackup" type="file" accept="application/json,.json"></label>
+        </div>
+        <div class="sub" id="backupStatus">נשמר גם עותק גיבוי מקומי אוטומטי.</div>
+      </div>
       <div class="card">
         <h2>פרופיל ויעדים</h2>
         <div class="form-grid">
@@ -232,18 +245,10 @@
           <label>משקל יעד (ק״ג)<input id="targetWeight" type="number" step="0.1"></label>
           <label>יעד קלורי יומי<input id="calorieTarget" type="number"></label>
           <label>יעד חלבון (גרם)<input id="proteinTarget" type="number"></label>
+          <label>יעד פעילות שבועי (דקות)<input id="weeklyActivityTarget" type="number" min="30" step="10"></label>
         </div>
         <button class="primary" id="saveSettings">שמור הגדרות</button>
         <p class="note">יעדי BMI, יחס מותניים/גובה ויחס מותניים/ירכיים מחושבים לפי ספי סקר מקובלים. גיל משפיע על מדדים מסוימים ועל הערכת סיכון כוללת, אך לא כל סף משתנה לפי גיל.</p>
-      </div>
-      <div class="card backup-card">
-        <h2>גיבוי ושחזור נתונים</h2>
-        <p class="note">מומלץ לייצא גיבוי לפני הסרת האפליקציה, ניקוי נתוני Chrome או מעבר לכתובת אתר אחרת. הנתונים נשמרים מקומית במכשיר.</p>
-        <div class="backup-actions">
-          <button class="secondary" id="exportBackup">ייצא גיבוי</button>
-          <label class="secondary file-button">ייבא גיבוי<input id="importBackup" type="file" accept="application/json,.json"></label>
-        </div>
-        <div class="sub" id="backupStatus">נשמר גם עותק גיבוי מקומי אוטומטי.</div>
       </div>
     </section>
   </main>
