@@ -14,7 +14,7 @@ function loadState(){
 let state=loadState();
 state.profile={...defaultState.profile,...(state.profile||{})};
 state.metrics=state.metrics||[];state.meals=state.meals||[];state.activities=state.activities||[];state.health=state.health||[];
-// v4.0 migration: ensure every legacy meal/activity has a stable id so delete works on old data too.
+// v4.1 migration: ensure every legacy meal/activity has a stable id so delete works on old data too.
 state.meals=state.meals.map((x,i)=>({...x,id:x.id??`meal-legacy-${x.date||'na'}-${x.time||'na'}-${i}`}));
 state.activities=state.activities.map((x,i)=>({...x,id:x.id??`activity-legacy-${x.date||'na'}-${x.time||'na'}-${i}`}));
 localStorage.setItem(LS,JSON.stringify(state));
@@ -78,8 +78,8 @@ function renderHealth(){const h=latestHealth(),c=calcHealth(h);['sbp','dbp','res
 function renderReports(){const cut=new Date();cut.setDate(cut.getDate()-6);const ds=[...Array(7)].map((_,i)=>{const d=new Date(cut);d.setDate(cut.getDate()+i);return d.toISOString().slice(0,10)});const ms=state.metrics.filter(x=>ds.includes(x.date));const meals=state.meals.filter(x=>ds.includes(x.date));const acts=state.activities.filter(x=>ds.includes(x.date));const avg=ms.length?(sum(ms,'weight')/ms.length).toFixed(1):'—';const h=latestHealth(),ch=calcHealth(h);q('weeklySummary').innerHTML=`<div class="targets"><div class="target"><strong>משקל ממוצע</strong><span>${avg} ק״ג</span></div><div class="target"><strong>קלוריות ממוצעות</strong><span>${Math.round(sum(meals,'calories')/7)}</span></div><div class="target"><strong>חלבון ממוצע</strong><span>${Math.round(sum(meals,'protein')/7)} ג׳</span></div><div class="target"><strong>פעילות</strong><span>${acts.length} אימונים</span></div><div class="target"><strong>לחץ דם אחרון</strong><span>${h.sbp&&h.dbp?`${h.sbp}/${h.dbp}`:'—'}</span></div><div class="target"><strong>Non-HDL אחרון</strong><span>${ch.nonHdl!=null?Math.round(ch.nonHdl):'—'}</span></div></div>`;q('reportTargets').innerHTML=targetRows(calc(),latestMetric())}
 function fillSettings(){const p=state.profile;q('birthDate').value=p.birthDate||'';q('sex').value=p.sex||'male';q('height').value=p.height||'';q('targetWeight').value=p.targetWeight||'';q('calorieTarget').value=p.calorieTarget||'';q('proteinTarget').value=p.proteinTarget||'';q('weeklyActivityTarget').value=p.weeklyActivityTarget||150}
 function q(id){return document.getElementById(id)}function sum(a,k){return a.reduce((s,x)=>s+(+x[k]||0),0)}
-function validScreen(name){return ['today','meals','metrics','activity','health','reports','settings'].includes(name)}
-function go(name,updateHash=true){if(!validScreen(name))name='today';document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.dataset.screen===name));document.querySelectorAll('[data-screen-btn]').forEach(x=>x.classList.toggle('active',x.dataset.screenBtn===name));q('pageTitle').textContent={today:'היום',meals:'ארוחות',metrics:'מדדי גוף',activity:'פעילות',health:'בריאות',reports:'דוחות',settings:'הגדרות'}[name]||'';if(updateHash&&location.hash!==`#${name}`){history.replaceState(null,'',`#${name}`)}scrollTo(0,0)}
+function validScreen(name){return ['today','meals','metrics','activity','health','reports','data','settings'].includes(name)}
+function go(name,updateHash=true){if(!validScreen(name))name='today';document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.dataset.screen===name));document.querySelectorAll('[data-screen-btn]').forEach(x=>x.classList.toggle('active',x.dataset.screenBtn===name));q('pageTitle').textContent={today:'היום',meals:'ארוחות',metrics:'מדדי גוף',activity:'פעילות',health:'בריאות',reports:'דוחות',data:'נתונים',settings:'הגדרות'}[name]||'';if(updateHash&&location.hash!==`#${name}`){history.replaceState(null,'',`#${name}`)}scrollTo(0,0)}
 document.querySelectorAll('[data-screen-btn]').forEach(b=>b.onclick=()=>go(b.dataset.screenBtn));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));q('settingsBtn').onclick=()=>go('settings');
 q('saveSettings').onclick=()=>{state.profile={birthDate:q('birthDate').value,sex:q('sex').value,height:+q('height').value,targetWeight:+q('targetWeight').value,calorieTarget:+q('calorieTarget').value,proteinTarget:+q('proteinTarget').value,weeklyActivityTarget:+q('weeklyActivityTarget').value||150};save();go('today')};
 q('saveMetrics').onclick=()=>{const rec={date:today(),weight:+q('inWeight').value,waist:+q('inWaist').value,hip:+q('inHip').value,bodyFat:+q('inBodyFat').value};state.metrics=state.metrics.filter(x=>x.date!==rec.date);state.metrics.push(rec);save();go('today')};
@@ -143,7 +143,7 @@ q('shareBackup').onclick=async()=>{
   }
 };
 q('importBackup').onchange=async e=>{const file=e.target.files&&e.target.files[0];if(!file)return;try{const text=await file.text();const parsed=JSON.parse(text);const incoming=parsed.data||parsed;if(!incoming||typeof incoming!=='object')throw new Error('invalid');if(!confirm('לייבא את הגיבוי ולהחליף את הנתונים הנוכחיים באפליקציה?')){e.target.value='';return}state=incoming;state.profile={...defaultState.profile,...(state.profile||{})};state.metrics=state.metrics||[];state.meals=state.meals||[];state.activities=state.activities||[];state.health=state.health||[];
-// v4.0 migration: ensure every legacy meal/activity has a stable id so delete works on old data too.
+// v4.1 migration: ensure every legacy meal/activity has a stable id so delete works on old data too.
 state.meals=state.meals.map((x,i)=>({...x,id:x.id??`meal-legacy-${x.date||'na'}-${x.time||'na'}-${i}`}));
 state.activities=state.activities.map((x,i)=>({...x,id:x.id??`activity-legacy-${x.date||'na'}-${x.time||'na'}-${i}`}));
 localStorage.setItem(LS,JSON.stringify(state));
