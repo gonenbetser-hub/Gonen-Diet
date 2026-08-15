@@ -1,23 +1,10 @@
-const C='diet-control-v4.6-install-update-pwa';
-const CORE=['./','./index.html','./styles.css','./app.js','./manifest.json','./icon-192.png','./icon-512.png'];
-self.addEventListener('install',e=>{
-  self.skipWaiting();
-  e.waitUntil(caches.open(C).then(c=>c.addAll(CORE)));
-});
-self.addEventListener('activate',e=>{
-  e.waitUntil(Promise.all([
-    caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==C).map(k=>caches.delete(k)))),
-    self.clients.claim()
-  ]));
-});
+const C='diet-control-v3.1';
+const CORE=['./','./index.html','./styles.css','./app.js'];
+self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(C).then(c=>c.addAll(CORE)))});
+self.addEventListener('activate',e=>{e.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==C).map(k=>caches.delete(k)))),self.clients.claim()]))});
 self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET')return;
   const u=new URL(e.request.url);
-  if(u.origin!==self.location.origin)return;
-  const fresh=e.request.mode==='navigate'||u.pathname.endsWith('/manifest.json')||u.pathname.endsWith('/icon-192.png')||u.pathname.endsWith('/icon-512.png')||u.pathname.endsWith('/app.js')||u.pathname.endsWith('/styles.css');
-  if(fresh){
-    e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(C).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match(e.request).then(r=>r||caches.match('./index.html'))));
-    return;
-  }
-  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
+  const fresh=e.request.mode==='navigate'||u.pathname.includes('manifest')||u.pathname.includes('/icons/');
+  if(fresh){e.respondWith(fetch(e.request).then(r=>{const copy=r.clone();caches.open(C).then(c=>c.put(e.request,copy));return r}).catch(()=>caches.match(e.request)));return;}
+  e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(resp=>{const copy=resp.clone();caches.open(C).then(c=>c.put(e.request,copy));return resp})));
 });

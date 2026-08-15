@@ -115,15 +115,25 @@ main{padding-bottom:160px}
 main{padding-bottom:164px}
 @media(max-width:480px){.bottomnav{gap:4px;padding-inline:max(6px,env(safe-area-inset-right))}.bottomnav button{min-height:102px;padding:8px 1px 7px}.bottomnav .nav-icon{min-height:44px}.bottomnav .nav-icon svg{width:40px;height:40px}.bottomnav .nav-label{font-size:11px !important;margin-top:7px !important}main{padding-bottom:158px}}
 
-/* v4 evidence-first UX */
-.evidence-chip{display:inline-flex;align-items:center;background:#eef7f0;border:1px solid #cfe7d5;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:700;color:#23603a;white-space:nowrap}
-.action-card{border:1px solid #dfe7f5}.action-text{line-height:1.55}.action-list{display:grid;gap:8px;margin-top:12px}.action-item{display:grid;grid-template-columns:32px 1fr auto;gap:10px;align-items:center;padding:10px;border-radius:14px;background:#f7f8fa}.action-rank{width:28px;height:28px;border-radius:50%;background:#111827;color:#fff;display:grid;place-items:center;font-weight:800}.info-btn{border:1px solid #d7dce3;background:#fff;border-radius:999px;padding:7px 10px;font-size:12px;font-weight:700;cursor:pointer}.target-side{text-align:left;display:flex;flex-direction:column;align-items:flex-end;gap:4px}.secondary{width:100%;border:1px solid #d7dce3;border-radius:14px;background:#fff;color:#111827;padding:14px;font-size:17px;font-weight:700;margin-top:10px}.metric-dialog{width:min(620px,calc(100% - 24px));border:0;border-radius:22px;padding:0;box-shadow:0 24px 80px #0005}.metric-dialog::backdrop{background:#0007}.metric-dialog form{padding:20px}.dialog-head{display:flex;justify-content:space-between;align-items:center;gap:12px}.dialog-close{width:42px;height:42px;border:0;border-radius:50%;font-size:28px;background:#f0f2f5}.explain-block p{line-height:1.6}.explain-block a{color:#0b57d0;font-weight:700}.evidence-list{display:grid;gap:10px}.source-card{display:flex;justify-content:space-between;gap:14px;align-items:center;text-decoration:none;color:inherit;border:1px solid #e5e7eb;border-radius:16px;padding:14px}.source-card span{font-size:13px;color:#6b7280}.source-card:hover{background:#f8fafc}
-@media(max-width:480px){.action-item{grid-template-columns:30px 1fr}.action-item .info-btn{grid-column:2;justify-self:start}.source-card{flex-direction:column;align-items:flex-start}.metric-dialog form{padding:16px}}
 
-
-/* v4.2 – installable PWA UX */
-.topbar-actions{display:flex;align-items:center;gap:8px}.install-btn{border:0;background:#111827;color:#fff;border-radius:14px;padding:11px 13px;font:inherit;font-size:15px;font-weight:800;box-shadow:0 1px 4px #0002;display:inline-flex;align-items:center;gap:6px;cursor:pointer}.install-btn[hidden]{display:none!important}.install-btn:active{transform:translateY(1px)}@media(max-width:420px){.install-btn span{display:none}.install-btn{padding:12px;font-size:18px}}
-
-.overall-goal{margin-top:4px;font-size:14px;color:var(--muted)}.overall-goal strong{color:var(--text);font-size:17px}.score-wrap{text-align:center;min-width:72px}.score-denom{font-size:11px;color:var(--muted);margin-top:4px}.overall-gap{font-weight:700;margin:14px 0 6px}.score-scale{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px;font-size:11px;color:var(--muted);text-align:center}.score-scale span{background:#ffffff88;border-radius:10px;padding:7px 4px}.health-card.good .overall-gap{color:#176b3a}.health-card.warn .overall-gap{color:#7a5a00}.health-card.bad .overall-gap{color:#8a2d2d}@media(max-width:480px){.score-scale{font-size:10px;gap:4px}.score-scale span{padding:6px 3px}}
-
-.num-ltr{direction:ltr;unicode-bidi:isolate;display:inline-block}.list-actions{display:flex;align-items:center;gap:12px;text-align:left}.delete-btn{border:1px solid #fecaca;background:#fff;color:#b91c1c;border-radius:10px;padding:8px 10px;font-weight:700;cursor:pointer}.delete-btn:active{transform:scale(.98)}
+/* v3.1 – calorie dashboard first, duplicated on Meals, enhanced colors */
+.calorie-card{background:linear-gradient(145deg,#ffffff 0%,#f8fbff 55%,#f4fbf7 100%);border:1px solid #e8eef6;box-shadow:0 8px 24px rgba(17,24,39,.07);}
+.calorie-card h2{margin-bottom:0;}
+.calorie-action{color:#2563eb;text-decoration:none;background:#eff6ff;padding:8px 12px;border-radius:999px;}
+.calorie-card .ring{box-shadow:inset 0 0 0 1px rgba(17,24,39,.04),0 7px 18px rgba(37,99,235,.10);}
+.calorie-card .ring:before{background:linear-gradient(145deg,#fff,#f8fafc);}
+.colorful-stats{gap:10px;}
+.calstat{border-radius:14px;padding:11px 12px;border:1px solid transparent;min-height:69px;}
+.calstat span{display:block;font-weight:700;margin-bottom:5px;}
+.calstat strong{font-size:21px;}
+.calstat.target{background:#eff6ff;border-color:#dbeafe;}
+.calstat.target span,.calstat.target strong{color:#1d4ed8;}
+.calstat.eaten{background:#fff7ed;border-color:#ffedd5;}
+.calstat.eaten span,.calstat.eaten strong{color:#c2410c;}
+.calstat.burned{background:#f0fdf4;border-color:#dcfce7;}
+.calstat.burned span,.calstat.burned strong{color:#15803d;}
+.calstat.net{background:#faf5ff;border-color:#f3e8ff;}
+.calstat.net span,.calstat.net strong{color:#7e22ce;}
+.calorie-status{font-size:13px;font-weight:700;padding:7px 10px;border-radius:999px;background:#eff6ff;color:#1d4ed8;}
+.calorie-status.near{background:#fff7ed;color:#c2410c}.calorie-status.over{background:#fef2f2;color:#b91c1c}.calorie-status.ok{background:#eff6ff;color:#1d4ed8}
+@media(max-width:480px){.calorie-card .calorie-ring-wrap{gap:14px}.calstat{padding:9px 8px;min-height:64px}.calstat strong{font-size:18px}.calstat span{font-size:12px}.calorie-status{font-size:11px;padding:6px 8px}}
