@@ -8,10 +8,10 @@
 <meta name="apple-mobile-web-app-title" content="Diet Control">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>Diet Control</title>
-<link rel="manifest" href="manifest-v5.1.json">
+<link rel="manifest" href="manifest-v5.2.json">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/diet-control-v51-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-v51.png">
-<link rel="stylesheet" href="styles.css?v=5.1">
+<link rel="stylesheet" href="styles.css?v=5.2">
 <script>
 window.__dietControlInstallPrompt=null;
 window.addEventListener('beforeinstallprompt',function(e){
@@ -24,7 +24,7 @@ window.addEventListener('beforeinstallprompt',function(e){
 <body>
 <div id="app">
 <header class="topbar">
-  <div><div class="eyebrow">Diet Control <span class="version">v5.1</span></div><h1 id="pageTitle">היום</h1></div>
+  <div><div class="eyebrow">Diet Control <span class="version">v5.2</span></div><h1 id="pageTitle">היום</h1></div>
   <div class="top-actions"><button id="installBtn" class="install-btn" hidden>התקנה</button><button id="settingsBtn" class="icon-btn" aria-label="הגדרות">⚙</button></div>
 </header>
 <main>
@@ -75,8 +75,20 @@ window.addEventListener('beforeinstallprompt',function(e){
   <div class="card data-card"><h2>נתונים וגיבוי</h2><p>כל הנתונים נשמרים מקומית במכשיר. מומלץ לייצא גיבוי לפני הסרה או התקנה מחדש.</p><div class="data-actions"><button id="exportBtn" class="primary">⬇ ייצא קובץ גיבוי</button><button id="shareBtn" class="secondary">שתף / שמור גיבוי</button><label class="secondary file-btn">⬆ ייבא קובץ גיבוי<input id="importFile" type="file" accept="application/json,.json" hidden></label></div><div id="backupStatus" class="status-box">אין פעולה אחרונה</div></div>
 </section>
 
+<section class="screen" data-screen="diagnostics">
+  <div class="card diag-hero">
+    <div class="section-head"><div><span class="label">אבחון PWA</span><h2>בדיקת התקנה</h2></div><span id="diagOverall" class="diag-overall">בודק…</span></div>
+    <p class="muted">המסך בודק מה Chrome מזהה בפועל במכשיר. הוא אינו מוחק נתוני משקל, ארוחות או פעילות.</p>
+    <button id="runDiagnostics" class="primary">רענן אבחון</button>
+    <button id="diagInstallBtn" class="secondary">נסה התקנה</button>
+  </div>
+  <div class="card"><h2>תוצאות</h2><div id="diagnosticList" class="diagnostic-list"></div></div>
+  <div class="card"><h2>פרטי סביבה</h2><div id="diagnosticDetails" class="diag-details"></div></div>
+  <div class="card"><h2>תיקון מטמון התקנה</h2><p class="muted">אם Chrome ממשיך לזהות גרסה ישנה, ניתן למחוק רק את Service Worker וה־Cache של האפליקציה. הנתונים האישיים ב־localStorage אינם נמחקים.</p><button id="resetPwaCache" class="secondary danger-outline">אפס Service Worker ומטמון</button></div>
+</section>
+
 <section class="screen" data-screen="settings">
-  <div class="card"><h2>פרופיל ויעדים</h2><div class="form-grid"><label>תאריך לידה<input id="birthDate" type="date"></label><label>מין<select id="sex"><option value="male">גבר</option><option value="female">אישה</option></select></label><label>גובה (ס״מ)<input id="height" type="number" step="0.1"></label><label>משקל יעד<input id="targetWeight" type="number" step="0.1"></label><label>יעד קלורי יומי<input id="calorieTarget" type="number"></label><label>יעד חלבון<input id="proteinTarget" type="number"></label><label>יעד פעילות שבועי (דקות)<input id="activityTarget" type="number"></label></div><button id="saveSettings" class="primary">שמור הגדרות</button><button class="secondary" data-go="data">נתונים וגיבוי</button></div>
+  <div class="card"><h2>פרופיל ויעדים</h2><div class="form-grid"><label>תאריך לידה<input id="birthDate" type="date"></label><label>מין<select id="sex"><option value="male">גבר</option><option value="female">אישה</option></select></label><label>גובה (ס״מ)<input id="height" type="number" step="0.1"></label><label>משקל יעד<input id="targetWeight" type="number" step="0.1"></label><label>יעד קלורי יומי<input id="calorieTarget" type="number"></label><label>יעד חלבון<input id="proteinTarget" type="number"></label><label>יעד פעילות שבועי (דקות)<input id="activityTarget" type="number"></label></div><button id="saveSettings" class="primary">שמור הגדרות</button><button class="secondary" data-go="data">נתונים וגיבוי</button><button class="secondary" data-go="diagnostics">אבחון התקנה</button></div>
 </section>
 </main>
 <nav class="bottomnav">
@@ -89,6 +101,6 @@ window.addEventListener('beforeinstallprompt',function(e){
 </nav>
 </div>
 <div id="toast" class="toast"></div>
-<script src="app.js?v=5.1"></script>
+<script src="app.js?v=5.2"></script>
 </body>
 </html>

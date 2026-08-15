@@ -1,5 +1,5 @@
-const CACHE='diet-control-v5.1';
-const CORE=['./','./index.html','./styles.css?v=5.1','./app.js?v=5.1','./manifest-v5.1.json','./icons/diet-control-v51-192.png','./icons/diet-control-v51-512.png','./icons/diet-control-v51-maskable-512.png','./icons/apple-touch-icon-v51.png'];
+const CACHE='diet-control-v5.2';
+const CORE=['./','./index.html','./styles.css?v=5.2','./app.js?v=5.2','./manifest-v5.2.json','./icons/diet-control-v51-192.png','./icons/diet-control-v51-512.png','./icons/diet-control-v51-maskable-512.png','./icons/apple-touch-icon-v51.png'];
 self.addEventListener('install',event=>{self.skipWaiting();event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(CORE)))});
 self.addEventListener('activate',event=>{event.waitUntil((async()=>{const keys=await caches.keys();await Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)));await self.clients.claim()})())});
 self.addEventListener('fetch',event=>{

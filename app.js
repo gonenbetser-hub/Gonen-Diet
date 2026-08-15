@@ -46,15 +46,15 @@ window.deleteRecord=deleteRecord;
 function escapeHtml(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function fmtDate(s){if(!s)return'';const [y,m,d]=s.split('-');return `${d}.${m}.${y}`}
 function dayName(s){return ['א','ב','ג','ד','ה','ו','ש'][new Date(s+'T12:00:00').getDay()]}
-function validScreen(s){return ['today','meals','activity','metrics','health','reports','settings','data'].includes(s)}
-function go(name,hash=true){if(!validScreen(name))name='today';document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.dataset.screen===name));document.querySelectorAll('[data-screen-btn]').forEach(x=>x.classList.toggle('active',x.dataset.screenBtn===name));q('pageTitle').textContent={today:'היום',meals:'ארוחות',activity:'פעילות',metrics:'מדדי גוף',health:'בריאות',reports:'דוחות',settings:'הגדרות',data:'נתונים'}[name];if(hash)history.replaceState(null,'','#'+name);scrollTo(0,0);if(name==='activity')setTimeout(()=>drawActivityChart(weekDates()),20);if(name==='metrics')setTimeout(drawWeightChart,20)}
+function validScreen(s){return ['today','meals','activity','metrics','health','reports','settings','data','diagnostics'].includes(s)}
+function go(name,hash=true){if(!validScreen(name))name='today';document.querySelectorAll('.screen').forEach(x=>x.classList.toggle('active',x.dataset.screen===name));document.querySelectorAll('[data-screen-btn]').forEach(x=>x.classList.toggle('active',x.dataset.screenBtn===name));q('pageTitle').textContent={today:'היום',meals:'ארוחות',activity:'פעילות',metrics:'מדדי גוף',health:'בריאות',reports:'דוחות',settings:'הגדרות',data:'נתונים',diagnostics:'אבחון התקנה'}[name];if(hash)history.replaceState(null,'','#'+name);scrollTo(0,0);if(name==='activity')setTimeout(()=>drawActivityChart(weekDates()),20);if(name==='metrics')setTimeout(drawWeightChart,20);if(name==='diagnostics')setTimeout(runInstallDiagnostics,80)}
 document.querySelectorAll('[data-screen-btn]').forEach(b=>b.onclick=()=>go(b.dataset.screenBtn));document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>go(b.dataset.go));q('settingsBtn').onclick=()=>go('settings');
 q('saveSettings').onclick=()=>{state.profile={birthDate:q('birthDate').value,sex:q('sex').value,height:+q('height').value||0,targetWeight:+q('targetWeight').value||0,calorieTarget:+q('calorieTarget').value||0,proteinTarget:+q('proteinTarget').value||0,activityTarget:+q('activityTarget').value||150};save();go('today');toast('ההגדרות נשמרו')};
 q('saveMeal').onclick=()=>{state.meals.push({id:crypto.randomUUID?crypto.randomUUID():Date.now()+'m',date:localDate(),time:nowTime(),desc:q('mealDesc').value.trim()||'ארוחה',calories:+q('mealCalories').value||0,protein:+q('mealProtein').value||0});q('mealDesc').value='';q('mealCalories').value='';q('mealProtein').value='';save();go('meals');toast('הארוחה נשמרה')};
 q('saveActivity').onclick=()=>{state.activities.push({id:crypto.randomUUID?crypto.randomUUID():Date.now()+'a',date:localDate(),time:nowTime(),type:q('actType').value,minutes:+q('actMinutes').value||0,calories:+q('actCalories').value||0});q('actMinutes').value='';q('actCalories').value='';save();go('activity');toast('הפעילות נשמרה')};
 q('saveMetrics').onclick=()=>{state.metrics.push({id:crypto.randomUUID?crypto.randomUUID():Date.now()+'x',date:localDate(),weight:+q('inWeight').value||0,waist:+q('inWaist').value||0,hip:+q('inHip').value||0,bodyFat:+q('inBodyFat').value||0});save();go('metrics');toast('המדידה נשמרה')};
 q('saveHealth').onclick=()=>{const rec={id:crypto.randomUUID?crypto.randomUUID():Date.now()+'h',date:q('healthDate').value||localDate()};['sbp','dbp','restingHr','totalChol','ldl','hdl','triglycerides','fastingGlucose','hba1c','creatinine','egfr','uacr','apoB','lpa','prevent10','prevent30'].forEach(k=>rec[k]=+q('h_'+k).value||'');rec.smoking=q('h_smoking').checked;rec.diabetes=q('h_diabetes').checked;rec.bpMeds=q('h_bpMeds').checked;state.health.push(rec);save();go('health');toast('נתוני הבריאות נשמרו')};
-function backupPayload(){return{app:'Diet Control',version:'5.1',exportedAt:new Date().toISOString(),data:state}}
+function backupPayload(){return{app:'Diet Control',version:'5.2',exportedAt:new Date().toISOString(),data:state}}
 function downloadBackup(){const blob=new Blob([JSON.stringify(backupPayload(),null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=`Diet_Control_Backup_${localDate()}.json`;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(url);a.remove()},3000);q('backupStatus').textContent=`יוצא גיבוי בתאריך ${fmtDate(localDate())}`;toast('קובץ הגיבוי נוצר')}
 q('exportBtn').onclick=downloadBackup;
 q('shareBtn').onclick=async()=>{const file=new File([JSON.stringify(backupPayload(),null,2)],`Diet_Control_Backup_${localDate()}.json`,{type:'application/json'});if(navigator.canShare?.({files:[file]})){await navigator.share({files:[file],title:'Diet Control Backup'});q('backupStatus').textContent='הגיבוי שותף / נשמר'}else downloadBackup()};
@@ -85,6 +85,81 @@ installBtn.onclick=async()=>{
   deferredPrompt=null;window.__dietControlInstallPrompt=null;updateInstall();
 };
 updateInstall();
+
+function diagRow(label,status,detail,kind='neutral'){
+  return `<div class="diag-row ${kind}"><div><strong>${label}</strong><div class="muted">${detail||''}</div></div><span class="diag-badge">${status}</span></div>`;
+}
+async function imageDimensions(url){
+  return new Promise(resolve=>{const img=new Image();img.onload=()=>resolve({ok:true,w:img.naturalWidth,h:img.naturalHeight});img.onerror=()=>resolve({ok:false,w:0,h:0});img.src=url+(url.includes('?')?'&':'?')+'diag='+Date.now()});
+}
+async function runInstallDiagnostics(){
+  const list=q('diagnosticList'),details=q('diagnosticDetails'),overall=q('diagOverall');
+  if(!list)return;
+  list.innerHTML='<div class="muted">מבצע בדיקות…</div>'; overall.textContent='בודק…'; overall.className='diag-overall';
+  const rows=[]; let failures=0,warnings=0;
+  const add=(label,ok,detail,warn=false)=>{const kind=ok?'good':warn?'warn':'bad';if(!ok){warn?warnings++:failures++}rows.push(diagRow(label,ok?'תקין':warn?'בדוק':'בעיה',detail,kind));};
+  const secure=location.protocol==='https:'||['localhost','127.0.0.1'].includes(location.hostname);
+  add('HTTPS / הקשר מאובטח',secure,`${location.protocol}//${location.host}`);
+  const stand=standalone();
+  rows.push(diagRow('מצב תצוגה',stand?'מותקן / Standalone':'דפדפן',stand?'האפליקציה נפתחה כאפליקציה עצמאית':'האפליקציה פתוחה בתוך Chrome',stand?'good':'neutral'));
+  const manifestLink=document.querySelector('link[rel="manifest"]');
+  let manifest=null, manifestUrl='';
+  try{
+    if(!manifestLink)throw new Error('לא נמצא link rel=manifest');
+    manifestUrl=new URL(manifestLink.getAttribute('href'),location.href).href;
+    const r=await fetch(manifestUrl,{cache:'no-store'}); if(!r.ok)throw new Error(`HTTP ${r.status}`); manifest=await r.json();
+    add('Web App Manifest',true,manifestUrl);
+  }catch(e){add('Web App Manifest',false,String(e.message||e));}
+  if(manifest){
+    add('שם אפליקציה',!!(manifest.name&&manifest.short_name),`${manifest.name||'—'} / ${manifest.short_name||'—'}`);
+    add('display: standalone',['standalone','fullscreen','minimal-ui'].includes(manifest.display),`display=${manifest.display||'—'}`);
+    add('start_url',!!manifest.start_url,manifest.start_url||'חסר');
+    const icons=Array.isArray(manifest.icons)?manifest.icons:[];
+    const icon192=icons.find(i=>String(i.sizes||'').split(/\s+/).includes('192x192'));
+    const icon512=icons.find(i=>String(i.sizes||'').split(/\s+/).includes('512x512')&&String(i.purpose||'any').includes('any'));
+    const mask=icons.find(i=>String(i.sizes||'').includes('512x512')&&String(i.purpose||'').includes('maskable'));
+    add('אייקון 192×192',!!icon192,icon192?.src||'חסר');
+    add('אייקון 512×512',!!icon512,icon512?.src||'חסר');
+    add('אייקון maskable',!!mask,mask?.src||'חסר',!mask);
+    for(const [label,icon] of [['קובץ אייקון 192',icon192],['קובץ אייקון 512',icon512],['קובץ Maskable',mask]]){
+      if(!icon)continue; const u=new URL(icon.src,manifestUrl).href; const d=await imageDimensions(u); add(label,d.ok&&d.w>0, d.ok?`${d.w}×${d.h} — ${u}`:`לא ניתן לטעון ${u}`);
+    }
+  }
+  const swSupported='serviceWorker' in navigator;
+  add('Service Worker נתמך',swSupported,swSupported?'הדפדפן תומך':'לא נתמך');
+  let regs=[];
+  if(swSupported){
+    try{regs=await navigator.serviceWorker.getRegistrations();add('Service Worker רשום',regs.length>0,regs.length?`${regs.length} רישום/ים`:'לא נמצא רישום');}
+    catch(e){add('Service Worker רשום',false,String(e.message||e));}
+    const controller=!!navigator.serviceWorker.controller;
+    add('העמוד נשלט ע״י Service Worker',controller,controller?navigator.serviceWorker.controller.scriptURL:'אין controller פעיל',!controller);
+  }
+  const promptReady=!!(deferredPrompt||window.__dietControlInstallPrompt);
+  if(stand) rows.push(diagRow('beforeinstallprompt','לא נדרש','האפליקציה כבר במצב standalone','good'));
+  else add('beforeinstallprompt התקבל',promptReady,promptReady?'Chrome אישר הצגת חלון התקנה':'Chrome לא מסר כרגע אירוע התקנה',true);
+  let related='לא נתמך';
+  try{if(navigator.getInstalledRelatedApps){const a=await navigator.getInstalledRelatedApps();related=`${a.length} אפליקציות קשורות מזוהות`;}}
+  catch(e){related='שגיאה בבדיקה';}
+  rows.push(diagRow('Installed Related Apps','מידע',related,'neutral'));
+  list.innerHTML=rows.join('');
+  overall.textContent=failures?`${failures} בעיות`:warnings?`${warnings} לבדיקה`:'הכול תקין';
+  overall.className='diag-overall '+(failures?'bad':warnings?'warn':'good');
+  const reg=regs[0];
+  details.innerHTML=`<div><strong>כתובת:</strong> ${location.href}</div><div><strong>User Agent:</strong> ${navigator.userAgent}</div><div><strong>Manifest:</strong> ${manifestUrl||'—'}</div><div><strong>SW scope:</strong> ${reg?.scope||'—'}</div><div><strong>SW script:</strong> ${reg?.active?.scriptURL||reg?.installing?.scriptURL||'—'}</div><div><strong>display-mode standalone:</strong> ${stand?'כן':'לא'}</div><div><strong>install prompt ready:</strong> ${promptReady?'כן':'לא'}</div>`;
+}
+if(q('runDiagnostics'))q('runDiagnostics').onclick=runInstallDiagnostics;
+if(q('diagInstallBtn'))q('diagInstallBtn').onclick=async()=>{
+  deferredPrompt=deferredPrompt||window.__dietControlInstallPrompt||null;
+  if(standalone()){toast('האפליקציה כבר פתוחה במצב מותקן');return}
+  if(deferredPrompt){deferredPrompt.prompt();const choice=await deferredPrompt.userChoice.catch(()=>null);deferredPrompt=null;window.__dietControlInstallPrompt=null;updateInstall();if(choice?.outcome==='accepted')toast('ההתקנה אושרה');setTimeout(runInstallDiagnostics,700);return}
+  alert('Chrome לא מסר כרגע אירוע התקנה. פתח את תפריט ⋮ של Chrome ובדוק אם מופיע “התקנת אפליקציה”. במסך האבחון ניתן לראות איזה תנאי אינו מזוהה.');
+};
+if(q('resetPwaCache'))q('resetPwaCache').onclick=async()=>{
+  if(!confirm('לאפס Service Worker ומטמון של האפליקציה? הנתונים האישיים שלך לא יימחקו.'))return;
+  try{if('serviceWorker'in navigator){const regs=await navigator.serviceWorker.getRegistrations();await Promise.all(regs.map(r=>r.unregister()));}if('caches'in window){const keys=await caches.keys();await Promise.all(keys.map(k=>caches.delete(k)));}toast('המטמון אופס — טוען מחדש');setTimeout(()=>location.reload(),900);}catch(e){alert('לא ניתן לאפס את המטמון: '+e.message)}
+};
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go="diagnostics"]');if(b)setTimeout(runInstallDiagnostics,80)});
+
 q('healthDate').value=localDate();
 if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});
 renderAll();const initial=(location.hash||'#today').slice(1);go(validScreen(initial)?initial:'today',false);window.addEventListener('hashchange',()=>go((location.hash||'#today').slice(1),false));
