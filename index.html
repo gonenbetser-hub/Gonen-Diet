@@ -6,6 +6,8 @@
   <meta name="theme-color" content="#111827" />
   <meta name="application-name" content="Diet Control" />
   <meta name="apple-mobile-web-app-title" content="Diet Control" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <script>window.__dietInstallPrompt=null;window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__dietInstallPrompt=e;window.dispatchEvent(new Event('dietinstallready'));});</script>
   <title>Diet Control</title>
   <link rel="manifest" href="manifest-diet-control-v3.json" />
   <link rel="icon" type="image/png" sizes="192x192" href="icons/diet-control-icon-192-v3.png" />
@@ -16,7 +18,7 @@
 <div id="app">
   <header class="topbar">
     <div>
-      <div class="eyebrow">מרכז בריאות מטבולית ומשקל <span class="version-badge">v3.3</span></div>
+      <div class="eyebrow">מרכז בריאות מטבולית ומשקל <span class="version-badge">v3.4</span></div>
       <h1 id="pageTitle">היום</h1>
     </div>
     <div class="top-actions"><button class="install-btn" id="installBtn" type="button">⬇ התקנה</button><button class="icon-btn" id="settingsBtn" aria-label="הגדרות">⚙️</button></div>
@@ -125,31 +127,20 @@
     </section>
 
     <section class="screen" data-screen="activity">
-      <div class="card activity-dashboard activity-summary-card">
-        <div class="row between"><h2>פעילות השבוע</h2><span class="activity-week-badge" id="activityWeekBadge">—</span></div>
-        <div class="activity-ring-wrap">
-          <div class="activity-ring" id="activityRing"><span id="activityRingValue">0</span><small>דקות מתוך היעד</small></div>
-          <div class="activity-summary-stats">
-            <div class="activity-summary-item target"><span>יעד שבועי</span><strong id="weekActivityTarget">150</strong><small>דקות</small></div>
-            <div class="activity-summary-item done"><span>בוצע</span><strong id="weekActivityMinutes">0</strong><small>דקות</small></div>
-            <div class="activity-summary-item calories"><span>קלוריות</span><strong id="weekActivityCalories">0</strong><small>השבוע</small></div>
-            <div class="activity-summary-item sessions"><span>אימונים</span><strong id="weekActivityCount">0</strong><small>השבוע</small></div>
+      <div class="card calorie-card activity-calorie-card">
+        <div class="row between"><h2>פעילות השבוע</h2><span class="calorie-status" id="activityWeekStatus">יעד שבועי</span></div>
+        <div class="calorie-ring-wrap">
+          <div class="ring activity-week-ring" id="activityRing"><span id="activityRingValue">0</span><small>דקות השבוע</small></div>
+          <div class="calstats colorful-stats">
+            <div class="calstat target"><span>יעד שבועי</span><strong id="weekActivityTarget">150</strong><small>דקות</small></div>
+            <div class="calstat eaten"><span>בוצע</span><strong id="weekActivityMinutes">0</strong><small>דקות</small></div>
+            <div class="calstat burned"><span>קלוריות</span><strong id="weekActivityCalories">0</strong><small>השבוע</small></div>
+            <div class="calstat net"><span>אימונים</span><strong id="weekActivityCount">0</strong><small>השבוע</small></div>
           </div>
         </div>
         <div class="activity-progress-text" id="activityProgressText">הזן פעילות כדי להתחיל</div>
-        <div class="activity-chart-wrap activity-chart-card">
-          <div class="row between activity-chart-head"><strong>פעילות ב־7 הימים האחרונים</strong><span class="sub">דקות לכל יום</span></div>
-          <canvas id="activityChart" height="210"></canvas>
-        </div>
       </div>
-      <div class="card cumulative-card">
-        <h2>מצטבר מתחילת המעקב</h2>
-        <div class="activity-stats cumulative">
-          <div class="activity-stat sessions"><span>סה״כ אימונים</span><strong id="totalActivityCount">0</strong></div>
-          <div class="activity-stat minutes"><span>סה״כ דקות</span><strong id="totalActivityMinutes">0</strong></div>
-          <div class="activity-stat calories"><span>סה״כ קלוריות</span><strong id="totalActivityCalories">0</strong></div>
-        </div>
-      </div>
+
       <div class="card">
         <h2>הוסף פעילות</h2>
         <div class="form-grid">
@@ -159,9 +150,24 @@
         </div>
         <button class="primary" id="saveActivity">שמור פעילות</button>
       </div>
-      <div class="card"><h2>פעילות היום</h2><div id="activityList"></div></div>
-    </section>
 
+      <div class="card"><h2>פעילות היום</h2><div id="activityList"></div></div>
+
+      <div class="card activity-week-chart-card">
+        <div class="row between"><h2>פעילות ב־7 הימים האחרונים</h2><span class="calorie-status ok">דקות ליום</span></div>
+        <canvas id="activityChart" height="210"></canvas>
+        <div class="week-chart-legend"><span><i class="legend-dot activity-dot"></i> דקות פעילות</span><strong id="activityWeekAverage">ממוצע: 0 דק׳</strong></div>
+      </div>
+
+      <div class="card cumulative-card">
+        <h2>מצטבר מתחילת המעקב</h2>
+        <div class="calstats colorful-stats cumulative-calstats">
+          <div class="calstat net"><span>סה״כ אימונים</span><strong id="totalActivityCount">0</strong></div>
+          <div class="calstat eaten"><span>סה״כ דקות</span><strong id="totalActivityMinutes">0</strong></div>
+          <div class="calstat burned"><span>סה״כ קלוריות</span><strong id="totalActivityCalories">0</strong></div>
+        </div>
+      </div>
+    </section>
 
     <section class="screen" data-screen="health">
       <div class="card">
